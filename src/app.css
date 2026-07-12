@@ -1,0 +1,607 @@
+/* Neumorphic theme (based on provided design) */
+
+:root {
+    /* Neutral (secondary) palette */
+    --primary-light: #bdbdbd;
+    --primary: #9e9e9e;
+    --primary-dark: #7d7d7d;
+    --white: #ffffff;
+    --greyLight-1: #f2f2f2; /* base surface */
+    --greyLight-2: #d9d9d9; /* light shadow */
+    --greyLight-3: #cfcfcf; /* mid */
+    --greyDark: #7a7a7a; /* text/icons */
+
+    /* Shadows from provided design */
+    --shadow:
+        0.8rem 0.8rem 1.4rem var(--greyLight-2),
+        -0.2rem -0.2rem 1.8rem var(--white);
+    --inner-shadow:
+        inset 0.2rem 0.2rem 0.5rem var(--greyLight-2),
+        inset -0.2rem -0.2rem 0.5rem var(--white);
+
+    /* Shadow alphas for raised rim (tunable) */
+    --rim-dark: rgba(0, 0, 0, 0.14);
+    --rim-light: rgba(255, 255, 255, 0.28);
+
+    /* Map to existing variables used in the app */
+    --base: var(--greyLight-1);
+    --ink: #3a3a3a;
+    --muted: var(--greyDark);
+    /* Accent for interactive hints (label hover, etc.) */
+    --accent: #6d5dfc; /* blue-violet */
+
+    /* Ring geometry (inner radius = 60px) */
+    --R: 220px; /* outer radius */
+    --r: 60px; /* inner radius */
+    --band: 160px; /* ring width */
+    --label-r: 140px; /* (R + r) / 2 */
+    /* Ring item app icon sizing */
+    --icon-size: 36px;
+    --icon-step: calc(var(--icon-size) * 0.5); /* ~1/2 overlap */
+    --icon-shadow: 0 1px 2px rgba(0, 0, 0, 0.14), 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Adapt look for dark wallpapers/system dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --base: #1d222e;
+        --ink: #d6deeb;
+        --muted: #8b95a6;
+        --greyLight-1: #1d222e;
+        --greyLight-2: rgba(0, 0, 0, 0.6);
+        --greyLight-3: #2a3040;
+        --accent: #8fa0ff; /* lighter accent for dark mode */
+        /* soften highlight on dark */
+        --white: rgba(255, 255, 255, 0.08);
+        --shadow:
+            0.3rem 0.3rem 0.6rem rgba(0, 0, 0, 0.65),
+            -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.06);
+        --inner-shadow:
+            inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.6),
+            inset -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.07);
+        /* Reduce white rim on dark */
+        --rim-dark: rgba(0, 0, 0, 0.7);
+        --rim-light: rgba(255, 255, 255, 0.06);
+    }
+
+    .pie-slice.selection {
+        background: radial-gradient(
+            circle at 50% 50%,
+            transparent var(--inner-px),
+            color-mix(in srgb, var(--ink) 28%, var(--base))
+                calc(var(--inner-px) + 2px),
+            color-mix(in srgb, var(--ink) 28%, var(--base)) 76%,
+            transparent 100%
+        );
+        box-shadow: inset 0 0 0 1px
+            color-mix(in srgb, var(--ink) 10%, transparent);
+    }
+
+    /* Match current slice appearance to hover slice in dark mode */
+    .pie-slice.current {
+        background: radial-gradient(
+            circle at 50% 50%,
+            transparent var(--inner-px),
+            color-mix(in srgb, var(--ink) 28%, var(--base))
+                calc(var(--inner-px) + 2px),
+            color-mix(in srgb, var(--ink) 28%, var(--base)) 76%,
+            transparent 100%
+        );
+        box-shadow: inset 0 0 0 1px
+            color-mix(in srgb, var(--ink) 10%, transparent);
+    }
+}
+
+body {
+    font-size: 20px;
+    font-family:
+        "Poppins",
+        "SF Pro Text",
+        -apple-system,
+        system-ui,
+        Segoe UI,
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    background: transparent;
+    color: var(--ink);
+    transition:
+        background 160ms ease,
+        color 160ms ease;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.screen {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    color: var(--ink);
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    overflow: hidden;
+}
+
+/* Main ring container - acts like the switcher */
+.ring {
+    position: relative;
+    width: calc(var(--R) * 2);
+    height: calc(var(--R) * 2);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Transparent drag handle covering the inner hole */
+.ring-drag {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--r) * 2 - 16px);
+    height: calc(var(--r) * 2 - 16px);
+    border-radius: 50%;
+    background: transparent;
+    cursor: grab;
+    z-index: 4; /* above hit-zones; inside only */
+}
+.ring-drag:active {
+    cursor: grabbing;
+}
+
+/* Outer raised rim using pseudo-element so it isn't clipped by masks */
+.ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: transparent; /* no fill; only shadow */
+    pointer-events: none;
+    z-index: 0;
+    /* Use alpha-controlled rim to avoid glow on dark wallpapers */
+    box-shadow:
+        0.6rem 0.6rem 1.2rem var(--rim-dark),
+        -0.2rem -0.2rem 1.4rem var(--rim-light);
+}
+
+@media (max-height: 640px) {
+    .ring {
+        width: calc(var(--R) * 2);
+        height: calc(var(--R) * 2);
+    }
+}
+
+/* Ring background - The main glass morphism effect */
+.ring-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+
+    /* Base surface */
+    background: var(--base);
+
+    /* Ring shape mask */
+    -webkit-mask: radial-gradient(
+        circle at center,
+        transparent 0 var(--r),
+        #000 var(--r) var(--R),
+        transparent var(--R) 100%
+    );
+    mask: radial-gradient(
+        circle at center,
+        transparent 0 var(--r),
+        #000 var(--r) var(--R),
+        transparent var(--R) 100%
+    );
+
+    /* Inner bevel only; outer rim handled by .ring::before */
+    box-shadow: var(--inner-shadow);
+    z-index: 1;
+
+    /* Interactions */
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+    transition:
+        background-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+/* Subtle inner lighting on the ring band */
+.ring-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    /* Apply the same ring-shaped mask */
+    -webkit-mask: radial-gradient(
+        circle at center,
+        transparent 0 var(--r),
+        #000 var(--r) var(--R),
+        transparent var(--R) 100%
+    );
+    mask: radial-gradient(
+        circle at center,
+        transparent 0 var(--r),
+        #000 var(--r) var(--R),
+        transparent var(--R) 100%
+    );
+    /* Secondary tone: no inner light overlay */
+    display: none;
+}
+
+.ring-bg:active {
+    cursor: grabbing;
+}
+
+/* Secondary tone: no bloom */
+.ring::after {
+    display: none;
+}
+
+/* Inner rim bevel along the inner circle edge */
+.ring-inner-bevel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--r) * 2);
+    height: calc(var(--r) * 2);
+    border-radius: 50%;
+    pointer-events: none;
+    /* Place above .ring-bg (z=1) and below pie layers (z=2) */
+    z-index: 2;
+    /* Outer shadows of the inner circle create the inner-edge relief */
+    box-shadow:
+        -4px -4px 10px rgba(255, 255, 255, 0.65),
+         6px  6px 14px rgba(0, 0, 0, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+    .ring-inner-bevel {
+        /* Lower alphas on dark backgrounds to avoid glow */
+        box-shadow:
+            -3px -3px 8px rgba(255, 255, 255, 0.12),
+             5px  5px 10px rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* Space items arranged in circle */
+.ring-item {
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    padding: 0;
+    opacity: 1;
+    transition:
+        color 120ms ease,
+        transform 120ms ease;
+    z-index: 3;
+}
+
+.ring-item:hover {
+    color: var(--ink);
+}
+/* Keep color stable on hover/active; rely on icon motion only */
+.ring-item.active {
+    color: var(--ink);
+}
+.ring-item.current {
+    color: var(--muted);
+}
+
+.ring-icon-slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(var(--icon-size) + 6px);
+}
+
+
+.shortcut-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 88%, transparent);
+    color: var(--base);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    backdrop-filter: blur(3px);
+    z-index: 6;
+}
+
+.shortcut-hint-symbol,
+.shortcut-hint-number {
+    display: block;
+    line-height: 1;
+}
+
+.recent-indicator {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    display: block;
+    box-sizing: border-box;
+}
+
+.recent-indicator--last {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow:
+        0 0 0 2px var(--base),
+        0 2px 6px rgba(0, 0, 0, 0.24);
+}
+
+.recent-indicator--second {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 2px solid var(--accent);
+    background: var(--base);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.emoji {
+    font-size: 28px;
+    line-height: 1;
+    transition: none;
+    color: currentColor;
+}
+
+/* App icon in ring item */
+.app-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+    image-rendering: -webkit-optimize-contrast;
+    user-select: none;
+    pointer-events: none;
+    border: none;
+    background: transparent; /* no background fill */
+    padding: 0; /* no extra padding */
+    margin: 0; /* no extra margin */
+}
+
+.app-icons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Keep layout breathable when no icon is available */
+.app-icons--placeholder {
+    width: var(--icon-size);
+    height: var(--icon-size);
+}
+
+.app-icon--sm {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+}
+
+/* Stacked (1/3 overlap) layout for top-3 */
+.app-icons--stack {
+    position: relative;
+    width: calc(var(--icon-size) + (var(--icon-step) * 2));
+    height: var(--icon-size);
+}
+.app-icon--lg {
+    position: absolute;
+    top: 0;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border-radius: 7px;
+}
+/* Per-icon drop-shadows with slight vertical offsets */
+.app-icon--p0 {
+    left: 0;
+    z-index: 3;
+    top: 0;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
+}
+.app-icon--p1 {
+    left: var(--icon-step);
+    z-index: 2;
+    top: 0;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.12));
+}
+.app-icon--p2 {
+    left: calc(var(--icon-step) * 2);
+    z-index: 1;
+    top: 0;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --icon-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* Disable hover/active scaling for icons */
+.ring-item:hover .emoji {
+    scale: 1;
+}
+.ring-item.active .emoji {
+    scale: 1;
+}
+
+/* Labels */
+.label {
+    margin-top: 4px;
+    font-size: 14px;
+    color: currentColor;
+    font-weight: 500;
+    cursor: text; /* show I-beam to indicate editable */
+    transition: color 120ms ease;
+}
+
+/* Hover feedback only when hovering the label itself */
+.label:hover { color: var(--accent); }
+
+.label-input {
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--base);
+    border: none;
+    border-radius: 1rem;
+    padding: 2px 8px;
+    width: 72px;
+    text-align: center;
+    outline: none;
+    box-shadow: var(--inner-shadow);
+}
+
+/* Invisible pie sectors for hit detection */
+.pie-list {
+    position: absolute;
+    inset: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.pie-item {
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    bottom: 50%;
+    right: 50%;
+    transform-origin: bottom right;
+    overflow: hidden;
+}
+
+.pie-hit {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 50%;
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Visual pie slice indicators */
+.pie-slice {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    transform-origin: 50% 50%;
+    border-radius: 50%;
+    --inner-px: var(--r);
+    pointer-events: none;
+    /* Ensure the slice only shows within the ring band (no inner bleed) */
+    -webkit-mask: radial-gradient(
+        circle at center,
+        transparent 0 var(--r),
+        #000 var(--r) var(--R),
+        transparent var(--R) 100%
+    );
+    mask: radial-gradient(
+        circle at center,
+        transparent 0 var(--r),
+        #000 var(--r) var(--R),
+        transparent var(--R) 100%
+    );
+    background: radial-gradient(
+        transparent var(--inner-px),
+        transparent var(--inner-px)
+    );
+}
+
+/* Visual pie slice states (light neumorph) */
+.pie-slice.selection {
+    /* Solid grey fill within the ring band on hover (via activeIndex) */
+    background: radial-gradient(
+        circle at 50% 50%,
+        transparent var(--inner-px),
+        color-mix(in srgb, var(--ink) 22%, var(--base))
+            calc(var(--inner-px) + 2px),
+        color-mix(in srgb, var(--ink) 22%, var(--base)) 76%,
+        transparent 100%
+    );
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.pie-slice.current {
+    /* Match hover slice exactly in light mode */
+    background: radial-gradient(
+        circle at 50% 50%,
+        transparent var(--inner-px),
+        color-mix(in srgb, var(--ink) 22%, var(--base))
+            calc(var(--inner-px) + 2px),
+        color-mix(in srgb, var(--ink) 22%, var(--base)) 76%,
+        transparent 100%
+    );
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+/* Animate the selection pie slice based on active index */
+.pie-slice.selection {
+    animation: fadeSel 90ms ease;
+}
+@keyframes fadeSel {
+    from {
+        opacity: 0.6;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Cards (alternative view) */
+.card {
+    display: none;
+}

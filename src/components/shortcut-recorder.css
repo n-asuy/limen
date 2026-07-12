@@ -1,0 +1,100 @@
+/* Neumorphic shortcut recorder. Shares the surface tokens the settings window
+   defines (--raise-sm, --press, --danger) and the Ring palette from app.css. */
+.shortcut-recorder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.shortcut-recorder__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.shortcut-recorder__row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.shortcut-recorder__button,
+.shortcut-recorder__reset {
+  border: none;
+  background: var(--base);
+  box-shadow: var(--raise-sm);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    box-shadow 140ms ease,
+    color 140ms ease;
+}
+
+.shortcut-recorder__button {
+  flex: 1;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.shortcut-recorder__button span {
+  pointer-events: none;
+}
+
+/* Listening: the key is pressed in, waiting to be filled. */
+.shortcut-recorder__button.is-listening {
+  box-shadow: var(--press);
+  color: var(--accent);
+}
+
+.shortcut-recorder__button:active:not(:disabled) {
+  box-shadow: var(--press);
+}
+
+.shortcut-recorder__reset {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.shortcut-recorder__reset:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.shortcut-recorder__reset:active:not(:disabled) {
+  box-shadow: var(--press-sm);
+}
+
+.shortcut-recorder__button:disabled,
+.shortcut-recorder__reset:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.shortcut-recorder__meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 18px;
+}
+
+.shortcut-recorder__hint {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.shortcut-recorder__error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.shortcut-recorder.is-disabled {
+  opacity: 0.6;
+}
