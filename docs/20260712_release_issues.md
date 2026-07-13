@@ -27,10 +27,11 @@ v0.1.0 のリリースは tauri-action@v1 が当時未公開で失敗(現在はv
 ### R-06 Mission Controlショートカットの前提 `open`(LP記載)
 文書・アプリ内案内・初回導線・自動検出は実装済み。残: LPへのセットアップ記載。
 
-### R-08 署名+公証 `open`(残り2 secret)
+### R-08 署名+公証 `fixed`(secrets登録完了)
 名義は Curino LLC(Team `BG439TZ56H`)で確定。CI側(release.ymlの署名+公証env、secrets欠落時のfail-fastバリデーション)は実装済み。
-- 登録済み(2026-07-13, `n-asuy/limen`): `APPLE_CERTIFICATE`(キーチェーンの Curino LLC Developer ID からリーフ+秘密鍵+中間証明書だけ抽出した .p12 の base64) / `APPLE_CERTIFICATE_PASSWORD` / `APPLE_SIGNING_IDENTITY`("Developer ID Application: Curino LLC (BG439TZ56H)") / `APPLE_TEAM_ID`(BG439TZ56H)
-- 残り: `APPLE_ID`(Curino Developer アカウントのメール) / `APPLE_PASSWORD`(そのアカウントで発行した App用パスワード)を登録する。
+- `n-asuy/limen` に6 secret 登録完了(2026-07-13): `APPLE_CERTIFICATE`(Curino LLC Developer ID のリーフ+秘密鍵+中間証明書だけ抽出した .p12 の base64) / `APPLE_CERTIFICATE_PASSWORD` / `APPLE_SIGNING_IDENTITY`("Developer ID Application: Curino LLC (BG439TZ56H)") / `APPLE_TEAM_ID`(BG439TZ56H) / `APPLE_ID`(yuji.sato@curino.jp) / `APPLE_PASSWORD`(App用パスワード)。
+- 鍵の控えは `~/limen-release-keys/`(リポジトリ外)に保管。updater鍵と合わせて[README](file://~/limen-release-keys/README.md)参照。
+- 実際の署名+公証はR-04のタグpushでCIが実行して初めて検証される(未検証)。
 
 ## P2: 品質・信頼性(リリース後の早期対応)
 
