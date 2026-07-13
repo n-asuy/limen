@@ -19,7 +19,7 @@
   --surface: #f2f2f2;
   --ink: #33363b;
   --muted: #63666c;
-  --accent: #6d5dfc;
+  --accent: #2563eb;
   --accent-ink: #ffffff;
   --shadow-lo: rgba(0, 0, 0, 0.14);
   --shadow-hi: rgba(255, 255, 255, 0.9);
@@ -46,7 +46,7 @@
     --surface: #1d222e;
     --ink: #d6deeb;
     --muted: #99a3b5;
-    --accent: #8fa0ff;
+    --accent: #7aa2ff;
     --accent-ink: #171b26;
     --shadow-lo: rgba(0, 0, 0, 0.6);
     --shadow-hi: rgba(255, 255, 255, 0.055);
@@ -114,7 +114,7 @@ p { margin: 0; }
 .btn--primary {
   background: var(--accent);
   color: var(--accent-ink);
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 .btn--primary:hover { filter: brightness(1.06); }
 
@@ -124,6 +124,15 @@ p { margin: 0; }
   box-shadow: var(--raised-sm);
 }
 .btn--soft:hover { box-shadow: var(--raised); }
+
+.icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex: none;
+}
 
 kbd {
   display: inline-flex;
@@ -294,6 +303,7 @@ kbd {
   pointer-events: none;
 }
 .ring-center .center-glyph { font-size: clamp(20px, 2.6vw, 26px); line-height: 1.2; }
+.ring-center .center-glyph .icon { display: block; }
 .ring-center .center-name {
   font-size: clamp(11px, 1.3vw, 13px);
   font-weight: 600;
@@ -317,6 +327,12 @@ kbd {
   border-radius: 50%;
   z-index: 2;
   overflow: clip; /* rotated sector boxes must not extend scrollable area */
+  /* Clip slices to the ring band here: masking the skewed slice itself
+     distorts the mask circle and lets corners poke past the rim */
+  -webkit-mask: radial-gradient(circle at center,
+    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
+  mask: radial-gradient(circle at center,
+    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
 }
 .pie-item {
   width: 50%;
@@ -345,25 +361,11 @@ kbd {
   transform-origin: 50% 50%;
   border-radius: 50%;
   pointer-events: none;
-  -webkit-mask: radial-gradient(circle at center,
-    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
-  mask: radial-gradient(circle at center,
-    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
-  background: radial-gradient(circle at 50% 50%,
-    transparent var(--r),
-    color-mix(in srgb, var(--ink) 22%, var(--base)) calc(var(--r) + 2px),
-    color-mix(in srgb, var(--ink) 22%, var(--base)) 76%,
-    transparent 100%);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+  background: color-mix(in srgb, var(--ink) 22%, var(--base));
 }
 @media (prefers-color-scheme: dark) {
   .pie-slice {
-    background: radial-gradient(circle at 50% 50%,
-      transparent var(--r),
-      color-mix(in srgb, var(--ink) 28%, var(--base)) calc(var(--r) + 2px),
-      color-mix(in srgb, var(--ink) 28%, var(--base)) 76%,
-      transparent 100%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+    background: color-mix(in srgb, var(--ink) 28%, var(--base));
   }
 }
 .pie-slice--current { opacity: 0.55; }
@@ -385,7 +387,8 @@ kbd {
   z-index: 3;
   font-family: var(--font);
 }
-.ring-item .glyph { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; }
+.ring-item .glyph { font-size: clamp(20px, 2.4vw, 25px); line-height: 1; }
+.ring-item .glyph .icon { display: block; }
 .ring-item .name {
   font-size: clamp(11px, 1.3vw, 13px);
   font-weight: 500;
@@ -522,18 +525,23 @@ kbd {
 }
 .chip--faded { opacity: 0.65; }
 
-.icon-stack { position: relative; height: 56px; width: 120px; }
+.icon-stack { position: relative; height: 56px; width: 124px; }
 .icon-tile {
   position: absolute;
   top: 0;
+  display: grid;
+  place-items: center;
   width: 52px;
   height: 52px;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+  border-radius: 13px;
+  background: var(--base);
+  color: var(--ink);
+  box-shadow: var(--raised-sm);
 }
-.icon-tile:nth-child(1) { left: 0; z-index: 3; background: linear-gradient(135deg, #5ac8fa, #2f6fed); }
-.icon-tile:nth-child(2) { left: 32px; z-index: 2; background: linear-gradient(135deg, #ffd60a, #ff9f0a); }
-.icon-tile:nth-child(3) { left: 64px; z-index: 1; background: linear-gradient(135deg, #32d74b, #0a8f4b); }
+.icon-tile .icon { width: 26px; height: 26px; }
+.icon-tile:nth-child(1) { left: 0; z-index: 3; }
+.icon-tile:nth-child(2) { left: 36px; z-index: 2; }
+.icon-tile:nth-child(3) { left: 72px; z-index: 1; }
 
 .trail-art { display: flex; align-items: center; gap: 14px; }
 .trail-dot {
@@ -569,52 +577,10 @@ kbd {
 .persist-art { font: 500 0.9rem var(--mono); color: var(--muted); }
 
 /* ---------------------------------------------------------------------------
-   Setup requirements
---------------------------------------------------------------------------- */
-.setup { padding: 0 0 110px; }
-.setup-head { max-width: 62ch; }
-.setup-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.7rem); }
-.setup-head p { margin-top: 16px; color: var(--muted); font-size: 1.06rem; max-width: 58ch; }
-.setup-grid {
-  margin-top: 44px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px;
-}
-.setup-card {
-  border-radius: var(--radius);
-  padding: 30px;
-  box-shadow: var(--inset);
-}
-.setup-card h3 { font-size: 1.15rem; letter-spacing: -0.02em; }
-.setup-card p { margin-top: 10px; color: var(--muted); font-size: 0.98rem; }
-.setup-card .path {
-  display: inline-block;
-  max-width: 100%;
-  margin-top: 14px;
-  font: 500 0.85rem var(--mono);
-  line-height: 1.6;
-  color: var(--ink);
-  background: var(--base);
-  box-shadow: var(--raised-sm);
-  padding: 7px 12px;
-  border-radius: 9px;
-}
-.privacy {
-  margin-top: 40px;
-  padding-top: 28px;
-  border-top: 1px solid var(--hairline);
-  color: var(--muted);
-  font-size: 1rem;
-  max-width: 70ch;
-}
-.privacy code { font: 500 0.88em var(--mono); color: var(--ink); }
-
-/* ---------------------------------------------------------------------------
    Closing CTA + footer
 --------------------------------------------------------------------------- */
 .closing {
-  padding: 60px 0 120px;
+  padding: 30px 0 120px;
   text-align: center;
 }
 .closing h2 { font-size: clamp(2.1rem, 4vw, 3.2rem); letter-spacing: -0.035em; }
@@ -676,6 +642,22 @@ kbd {
 </head>
 <body>
 
+<!-- Icon sprite: Phosphor Icons (MIT), regular weight -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-code" viewBox="0 0 256 256"><path d="M69.12,94.15,28.5,128l40.62,33.85a8,8,0,1,1-10.24,12.29l-48-40a8,8,0,0,1,0-12.29l48-40a8,8,0,0,1,10.24,12.3Zm176,27.7-48-40a8,8,0,1,0-10.24,12.3L227.5,128l-40.62,33.85a8,8,0,1,0,10.24,12.29l48-40a8,8,0,0,0,0-12.29ZM162.73,32.48a8,8,0,0,0-10.25,4.79l-64,176a8,8,0,0,0,4.79,10.26A8.14,8.14,0,0,0,96,224a8,8,0,0,0,7.52-5.27l64-176A8,8,0,0,0,162.73,32.48Z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 256 256"><path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/></symbol>
+  <symbol id="i-envelope-simple" viewBox="0 0 256 256"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 256 256"><path d="M200.77,53.89A103.27,103.27,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.77,53.89Zm13,93.71A15.89,15.89,0,0,1,198.21,160H152a32,32,0,0,0-32,32,16,16,0,0,1-21.31,15.07C62.49,194.3,40,164,40,128a88,88,0,0,1,87.09-88h.9a88.35,88.35,0,0,1,88,87.25A88.86,88.86,0,0,1,213.81,147.6ZM140,76a12,12,0,1,1-12-12A12,12,0,0,1,140,76ZM96,100A12,12,0,1,1,84,88,12,12,0,0,1,96,100Zm0,56a12,12,0,1,1-12-12A12,12,0,0,1,96,156Zm88-56a12,12,0,1,1-12-12A12,12,0,0,1,184,100Z"/></symbol>
+  <symbol id="i-note-pencil" viewBox="0 0 256 256"><path d="M229.66,58.34l-32-32a8,8,0,0,0-11.32,0l-96,96A8,8,0,0,0,88,128v32a8,8,0,0,0,8,8h32a8,8,0,0,0,5.66-2.34l96-96A8,8,0,0,0,229.66,58.34ZM124.69,152H104V131.31l64-64L188.69,88ZM200,76.69,179.31,56,192,43.31,212.69,64ZM224,128v80a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h80a8,8,0,0,1,0,16H48V208H208V128a8,8,0,0,1,16,0Z"/></symbol>
+  <symbol id="i-headphones" viewBox="0 0 256 256"><path d="M201.89,54.66A103.43,103.43,0,0,0,128.79,24H128A104,104,0,0,0,24,128v56a24,24,0,0,0,24,24H64a24,24,0,0,0,24-24V144a24,24,0,0,0-24-24H40.36A88,88,0,0,1,128,40h.67a87.71,87.71,0,0,1,87,80H192a24,24,0,0,0-24,24v40a24,24,0,0,0,24,24h16a24,24,0,0,0,24-24V128A103.41,103.41,0,0,0,201.89,54.66ZM64,136a8,8,0,0,1,8,8v40a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V136Zm152,48a8,8,0,0,1-8,8H192a8,8,0,0,1-8-8V144a8,8,0,0,1,8-8h24Z"/></symbol>
+  <symbol id="i-chat-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></symbol>
+  <symbol id="i-chart-bar" viewBox="0 0 256 256"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 256 256"><path d="M221.69,199.77,160,96.92V40h8a8,8,0,0,0,0-16H88a8,8,0,0,0,0,16h8V96.92L34.31,199.77A16,16,0,0,0,48,224H208a16,16,0,0,0,13.72-24.23ZM110.86,103.25A7.93,7.93,0,0,0,112,99.14V40h32V99.14a7.93,7.93,0,0,0,1.14,4.11L183.36,167c-12,2.37-29.07,1.37-51.75-10.11-15.91-8.05-31.05-12.32-45.22-12.81ZM48,208l28.54-47.58c14.25-1.74,30.31,1.85,47.82,10.72,19,9.61,35,12.88,48,12.88a69.89,69.89,0,0,0,19.55-2.7L208,208Z"/></symbol>
+  <symbol id="i-terminal-window" viewBox="0 0 256 256"><path d="M128,128a8,8,0,0,1-3,6.25l-40,32a8,8,0,1,1-10-12.5L107.19,128,75,102.25a8,8,0,1,1,10-12.5l40,32A8,8,0,0,1,128,128Zm48,24H136a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Zm56-96V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></symbol>
+  <symbol id="i-browser" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V88H40V56Zm0,144H40V104H216v96Z"/></symbol>
+  <symbol id="i-music-notes" viewBox="0 0 256 256"><path d="M212.92,17.69a8,8,0,0,0-6.86-1.45l-128,32A8,8,0,0,0,72,56V166.08A36,36,0,1,0,88,196V110.25l112-28v51.83A36,36,0,1,0,216,164V24A8,8,0,0,0,212.92,17.69ZM52,216a20,20,0,1,1,20-20A20,20,0,0,1,52,216ZM88,93.75V62.25l112-28v31.5ZM180,184a20,20,0,1,1,20-20A20,20,0,0,1,180,184Z"/></symbol>
+</svg>
+
 <header class="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="#">
@@ -725,7 +707,7 @@ kbd {
         <kbd class="k2 press">space</kbd>
         <span class="then">then</span>
         <kbd class="k3 press">4</kbd>
-        <span class="landed"><span>&#127912;</span> Design</span>
+        <span class="landed"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> Design</span>
       </div>
       <p class="flow-caption reveal">The ring appears, you pick a number, the overlay is gone before you blink.</p>
     </div>
@@ -741,9 +723,9 @@ kbd {
       <div class="bento">
         <div class="cell cell--named reveal">
           <div class="art chip-row">
-            <span class="chip">&#128187; Code</span>
-            <span class="chip">&#127912; Design</span>
-            <span class="chip chip--faded">&#128221; Notes</span>
+            <span class="chip"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg> Code</span>
+            <span class="chip"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> Design</span>
+            <span class="chip chip--faded"><svg class="icon" aria-hidden="true"><use href="#i-note-pencil"/></svg> Notes</span>
           </div>
           <h3>Names, not numbers</h3>
           <p>Give each Space a name and an emoji. Desktop 4 becomes Design, and you stop guessing.</p>
@@ -751,7 +733,9 @@ kbd {
         <div class="cell cell--icons reveal">
           <div class="art">
             <div class="icon-stack" aria-hidden="true">
-              <span class="icon-tile"></span><span class="icon-tile"></span><span class="icon-tile"></span>
+              <span class="icon-tile"><svg class="icon"><use href="#i-terminal-window"/></svg></span>
+              <span class="icon-tile"><svg class="icon"><use href="#i-browser"/></svg></span>
+              <span class="icon-tile"><svg class="icon"><use href="#i-music-notes"/></svg></span>
             </div>
           </div>
           <h3>See what's running where</h3>
@@ -791,34 +775,11 @@ kbd {
     </div>
   </section>
 
-  <!-- Setup requirements -->
-  <section class="setup">
-    <div class="wrap">
-      <div class="setup-head reveal">
-        <h2>Two switches to flip.</h2>
-        <p>macOS has no public API for switching Spaces, so Limen drives the system the honest way: by pressing the keys macOS already understands. That needs two settings.</p>
-      </div>
-      <div class="setup-grid">
-        <div class="setup-card reveal">
-          <h3>Accessibility permission</h3>
-          <p>Limen synthesizes the switching key events, which macOS gates behind Accessibility. It prompts on first launch, and reopens the right pane if a switch ever fails.</p>
-          <span class="path">System Settings &rsaquo; Privacy &amp; Security &rsaquo; Accessibility</span>
-        </div>
-        <div class="setup-card reveal">
-          <h3>Desktop switching shortcuts</h3>
-          <p>macOS ships the Ctrl+1-9 desktop shortcuts disabled. Enable them once, and Limen's settings window shows you which of the nine are live.</p>
-          <span class="path">System Settings &rsaquo; Keyboard &rsaquo; Shortcuts &rsaquo; Mission Control</span>
-        </div>
-      </div>
-      <p class="privacy reveal">No accounts, no analytics, no network. Everything Limen knows lives in <code>~/Library/Application Support/Limen</code> and never leaves your machine.</p>
-    </div>
-  </section>
-
   <!-- Closing CTA -->
   <section class="closing">
     <div class="wrap">
       <h2 class="reveal">Stop counting desktops.</h2>
-      <p class="reveal">Free and open source under the MIT license. One small download, two settings, nine Spaces with names.</p>
+      <p class="reveal">Free and open source under the MIT license. No accounts, no analytics, nothing ever leaves your machine.</p>
       <a class="btn btn--primary reveal" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
     </div>
   </section>
@@ -829,7 +790,7 @@ kbd {
     <span class="footer-brand"><img src="app_icon.png" alt="" width="22" height="22" /> Limen</span>
     <span class="footer-meta">
       <a href="https://github.com/n-asuy/limen">GitHub</a>
-      <span>MIT License &copy; Curino</span>
+      <span>MIT License</span>
     </span>
   </div>
 </footer>
@@ -844,16 +805,20 @@ kbd {
      Ring demo: same geometry as the app (pie sectors via rotate+skew)
   ------------------------------------------------------------------ */
   var SPACES = [
-    { glyph: "\u{1F4BB}", name: "Code" },
-    { glyph: "\u{1F310}", name: "Web" },
-    { glyph: "✉️", name: "Mail" },
-    { glyph: "\u{1F3A8}", name: "Design" },
-    { glyph: "\u{1F4DD}", name: "Notes" },
-    { glyph: "\u{1F3A7}", name: "Music" },
-    { glyph: "\u{1F4AC}", name: "Chat" },
-    { glyph: "\u{1F4CA}", name: "Data" },
-    { glyph: "\u{1F9EA}", name: "Lab" }
+    { icon: "code", name: "Code" },
+    { icon: "globe", name: "Web" },
+    { icon: "envelope-simple", name: "Mail" },
+    { icon: "palette", name: "Design" },
+    { icon: "note-pencil", name: "Notes" },
+    { icon: "headphones", name: "Music" },
+    { icon: "chat-circle", name: "Chat" },
+    { icon: "chart-bar", name: "Data" },
+    { icon: "flask", name: "Lab" }
   ];
+
+  function iconSvg(id) {
+    return '<svg class="icon" aria-hidden="true"><use href="#i-' + id + '"/></svg>';
+  }
   var N = SPACES.length;
   var STEP = 360 / N;
   var DELTA = 90 - STEP;
@@ -862,7 +827,6 @@ kbd {
   var ring = document.getElementById("demo-ring");
   var pieList = document.getElementById("pie-list");
   var center = document.getElementById("ring-center");
-  var centerDefault = center.innerHTML;
 
   var activeIndex = 0;
   var currentIndex = 0;
@@ -913,7 +877,7 @@ kbd {
       "translate(-50%, -50%) rotate(" + angle + "deg) " +
       "translate(var(--label-r)) rotate(" + -angle + "deg)";
     btn.innerHTML =
-      '<span class="glyph" aria-hidden="true">' + space.glyph + "</span>" +
+      '<span class="glyph" aria-hidden="true">' + iconSvg(space.icon) + "</span>" +
       '<span class="name">' + space.name + "</span>";
     btn.addEventListener("mouseenter", function () { interacted = true; setActive(i); });
     btn.addEventListener("click", function () { select(i); });
@@ -941,7 +905,7 @@ kbd {
     setActive(i);
     setCurrent(i);
     center.innerHTML =
-      '<span class="center-glyph">' + SPACES[i].glyph + "</span>" +
+      '<span class="center-glyph">' + iconSvg(SPACES[i].icon) + "</span>" +
       '<span class="center-name">' + SPACES[i].name + "</span>";
     center.classList.remove("pulse");
     void center.offsetWidth; /* restart animation */
