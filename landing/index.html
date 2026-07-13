@@ -32,7 +32,6 @@
   --inset:
     inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.12),
     inset -0.2rem -0.2rem 0.5rem var(--shadow-hi);
-  --hairline: rgba(0, 0, 0, 0.08);
   --radius: 20px;
   --font:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
@@ -59,7 +58,6 @@
     --inset:
       inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.55),
       inset -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.06);
-    --hairline: rgba(255, 255, 255, 0.09);
   }
 }
 
@@ -157,7 +155,6 @@ kbd {
   background: color-mix(in srgb, var(--base) 82%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--hairline);
 }
 .nav-inner {
   height: 68px;
@@ -587,7 +584,7 @@ kbd {
 .closing p { margin: 18px auto 0; color: var(--muted); font-size: 1.08rem; max-width: 48ch; }
 .closing .btn { margin-top: 34px; font-size: 17px; padding: 15px 32px; }
 
-.footer { border-top: 1px solid var(--hairline); padding: 34px 0; }
+.footer { padding: 34px 0 44px; }
 .footer-inner {
   display: flex;
   align-items: center;
