@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Added in-app updates: **Settings → Software update** checks GitHub Releases for a newer signed build and installs it in place, verifying the update signature before applying. Nothing is contacted over the network unless you press "Check for updates"
+- Fixed the tray menu not refreshing: Space names and the current-Space check mark now update after a rename or a Space switch, instead of only at launch
+- Documented the limits of Space detection (single display recommended, up to 9 Spaces, empty Spaces are ambiguous) in the README
+
 ## 0.1.0
 
 - Initial release of Limen, a macOS virtual desktop (Space) switcher that gives each Space a name and identity

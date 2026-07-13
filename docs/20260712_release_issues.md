@@ -16,20 +16,21 @@
 - 代替: 本リポジトリをそのまま公開(履歴の露出を許容するなら最も簡単)。実シークレットの混入は無し(調査済み)。
 - 残作業: 公開先リポジトリの作成、workflowへの `owner`/`repo` とPAT追加、LPのDownloadリンク実装、LPデプロイのCI化。
 
-### R-04 リリースCIの再実行 `open`
-v0.1.0 のリリースは tauri-action@v1 が当時未公開で失敗(現在はv1.0.0公開済みで修正不要)。タグ v0.1.0 は1コミット古い d4a804a を指す。バージョンを 0.1.1 に上げ(package.json / tauri.conf.json / Cargo.toml の3ファイル一致が必須。CIがタグとの一致を検証)、v0.1.1 タグをpushする。R-01・R-08(手動作業)解決後に実施。
+### R-04 リリースCIの再実行 `open`(タグpush待ち)
+v0.1.0 のリリースは tauri-action@v1 が当時未公開で失敗(現在はv1.0.0公開済みで修正不要)。
+- 実施済み: バージョンを 0.1.1 に統一(package.json / tauri.conf.json / Cargo.toml / Cargo.lock)。CHANGELOG に 0.1.1 エントリ追加。ビルド確認済み。
+- 残: 注釈付きタグを打って push (`git tag -a v0.1.1 -F <CHANGELOGエントリ> && git push origin v0.1.1`)。CI がタグとtauri.conf.jsonの一致・注釈の存在を検証する。
+- 前提: R-08 の残り2 secret(`APPLE_ID` / `APPLE_PASSWORD`)登録が未了だとビルド前 fail-fast で止まる。
 
 ## P1: 初回体験を壊すもの
 
 ### R-06 Mission Controlショートカットの前提 `open`(LP記載)
 文書・アプリ内案内・初回導線・自動検出は実装済み。残: LPへのセットアップ記載。
 
-### R-08 署名+公証 `open`(手動作業)
-CI側(release.ymlの署名+公証env、secrets欠落時のfail-fastバリデーション)は実装済み。残りの手動作業:
-1. Apple Developer Program 加入($99/年)
-2. Developer ID Application 証明書を作成し、.p12 をbase64化
-3. App用パスワード(appleid.apple.com)を発行
-4. リポジトリsecretsに6つ登録: `APPLE_CERTIFICATE`(.p12のbase64) / `APPLE_CERTIFICATE_PASSWORD` / `APPLE_SIGNING_IDENTITY`("Developer ID Application: <名前> (<TeamID>)") / `APPLE_ID` / `APPLE_PASSWORD`(App用パスワード) / `APPLE_TEAM_ID`
+### R-08 署名+公証 `open`(残り2 secret)
+名義は Curino LLC(Team `BG439TZ56H`)で確定。CI側(release.ymlの署名+公証env、secrets欠落時のfail-fastバリデーション)は実装済み。
+- 登録済み(2026-07-13, `n-asuy/limen`): `APPLE_CERTIFICATE`(キーチェーンの Curino LLC Developer ID からリーフ+秘密鍵+中間証明書だけ抽出した .p12 の base64) / `APPLE_CERTIFICATE_PASSWORD` / `APPLE_SIGNING_IDENTITY`("Developer ID Application: Curino LLC (BG439TZ56H)") / `APPLE_TEAM_ID`(BG439TZ56H)
+- 残り: `APPLE_ID`(Curino Developer アカウントのメール) / `APPLE_PASSWORD`(そのアカウントで発行した App用パスワード)を登録する。
 
 ## P2: 品質・信頼性(リリース後の早期対応)
 
