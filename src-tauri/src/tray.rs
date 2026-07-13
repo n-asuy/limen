@@ -42,8 +42,10 @@ fn read_space_names() -> Vec<String> {
     names
 }
 
-pub fn init_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
-    // Build menu according to requested layout
+/// Build the tray menu from the current persisted Space names and the
+/// inferred active Space. Rebuilt on rename and on space-changed so the
+/// labels and the ✓ marker stay in sync (the menu is otherwise static).
+fn build_tray_menu(app: &tauri::AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
     let menu = tauri::menu::Menu::new(app)?;
 
     // Prepare space labels 1..9 from persisted state
@@ -92,6 +94,26 @@ pub fn init_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
     let quit_item =
         tauri::menu::MenuItem::with_id(app, "quit", "Quit Limen", true, None::<&str>)?;
     menu.append(&quit_item)?;
+
+    Ok(menu)
+}
+
+/// Rebuild and swap the tray menu in place. The tray's menu-event handler is
+/// registered on the tray icon (not the menu) and keys off the stable item
+/// ids, so replacing the menu keeps the click behavior intact.
+pub fn rebuild_menu(app: &tauri::AppHandle) {
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        match build_tray_menu(app) {
+            Ok(menu) => {
+                let _ = tray.set_menu(Some(menu));
+            }
+            Err(e) => log::warn!("tray: failed to rebuild menu: {e}"),
+        }
+    }
+}
+
+pub fn init_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
+    let menu = build_tray_menu(app)?;
 
     tauri::tray::TrayIconBuilder::with_id("main-tray")
         .tooltip("Limen")

@@ -298,9 +298,12 @@ fn load_state_file() -> Result<String, String> {
 }
 
 #[tauri::command]
-fn save_state_file(content: String) -> Result<(), String> {
+fn save_state_file(app: tauri::AppHandle, content: String) -> Result<(), String> {
     let path = state_file_path()?;
-    persistence::write_atomically(&path, content.as_bytes())
+    persistence::write_atomically(&path, content.as_bytes())?;
+    // Space names may have changed; refresh the tray menu labels.
+    tray::rebuild_menu(&app);
+    Ok(())
 }
 
 #[tauri::command]
@@ -531,6 +534,8 @@ fn refresh_space_snapshot(app_handle: &tauri::AppHandle) {
         }
         info!("space snapshot: active index inferred = {}", idx);
         update_tray_icon(app_handle);
+        // Move the ✓ marker in the tray menu to the new active Space.
+        crate::tray::rebuild_menu(app_handle);
     }
     let _ = app_handle.emit("space-changed", ());
 

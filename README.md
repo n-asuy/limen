@@ -54,6 +54,12 @@ macOS Space Change Listener (NSNotificationCenter)
 
 **Space Detection**: macOS does not expose a public API for the active Space index. Limen builds a mapping by hashing visible windows (PID, name, layer) into a "fingerprint" and associating it with the Space index it was observed on.
 
+Because detection is an approximation, keep these limits in mind:
+
+- **Single display recommended.** On multiple displays the visible windows of all screens are mixed together, so the fingerprint cannot identify a single Space.
+- **Up to 9 Spaces.** Limen maps `Ctrl+1`–`9`, so only the first nine Spaces are addressable.
+- **Empty Spaces are ambiguous.** Two Spaces with no windows share the same (empty) fingerprint, so the tray digit may be wrong until each has a distinguishing window. Moving a window between Spaces likewise invalidates its learned fingerprint.
+
 **Space Switching**: Injects `Ctrl+[1-9]` keyboard events via `CGEventCreateKeyboardEvent`, triggering the built-in Mission Control hotkeys. No SIP disabling required.
 
 ## Setup Requirements
