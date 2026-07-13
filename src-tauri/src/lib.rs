@@ -271,7 +271,10 @@ pub(crate) fn ensure_settings_window(app: &tauri::AppHandle) -> Result<(), Strin
         tauri::WebviewUrl::App("index.html".into()),
     )
     .title("Limen Settings")
-    .inner_size(560.0, 640.0)
+    // The four sections measure 744pt at this width, so 782 is the floor once
+    // the title bar is counted. The extra room absorbs the states that add a
+    // line (an update is available, only some Space shortcuts are enabled).
+    .inner_size(560.0, 820.0)
     .resizable(false)
     .maximizable(false)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
