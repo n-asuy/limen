@@ -37,4 +37,4 @@ bun run package:mac:universal    # macOS bundle (arm64 + x86_64)
 
 ## License
 
-[MIT](LICENSE) © Curino
+[MIT](LICENSE)
