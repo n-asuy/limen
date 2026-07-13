@@ -11,6 +11,22 @@
 <meta property="og:type" content="website" />
 <link rel="icon" type="image/png" href="app_icon.png" />
 <style>
+/* Wordmark face: Space Grotesk (SIL OFL), self-hosted */
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/space-grotesk-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/space-grotesk-700.woff2") format("woff2");
+}
+
 /* ---------------------------------------------------------------------------
    Tokens: mirrors the app's own neumorphic palette (src/app.css)
 --------------------------------------------------------------------------- */
@@ -171,21 +187,15 @@ kbd {
   gap: 16px;
 }
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  font-family: "Space Grotesk", var(--font);
   font-weight: 700;
-  font-size: 19px;
-  letter-spacing: -0.02em;
+  font-size: 23px;
+  letter-spacing: 0.01em;
   text-decoration: none;
   color: #fff;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22);
-}
-.brand img {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.24);
 }
 .nav-links { display: flex; align-items: center; gap: 22px; }
 .nav-links > a:not(.btn) {
@@ -326,9 +336,11 @@ kbd {
   border-radius: 50%;
   pointer-events: none;
   z-index: 0;
+  /* Crisp drop shadow: the ring floats over the wallpaper, so no neumorphic
+     white glow (which smudges on a non-matching background) */
   box-shadow:
-    0.6rem 0.6rem 1.2rem var(--shadow-lo),
-    -0.2rem -0.2rem 1.4rem var(--shadow-hi);
+    0 2px 6px rgba(0, 30, 70, 0.16),
+    0 18px 40px rgba(0, 30, 70, 0.22);
 }
 .ring-bg {
   position: absolute;
@@ -667,8 +679,13 @@ kbd {
   gap: 16px;
   flex-wrap: wrap;
 }
-.footer-brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 15px; }
-.footer-brand img { width: 22px; height: 22px; border-radius: 6px; }
+.footer-brand {
+  font-family: "Space Grotesk", var(--font);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
 .footer-meta { color: var(--muted); font-size: 14px; display: flex; gap: 20px; align-items: center; }
 .footer-meta a { color: var(--muted); text-decoration: none; }
 .footer-meta a:hover { color: var(--ink); }
@@ -754,10 +771,7 @@ kbd {
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="#">
-      <img src="app_icon.png" alt="" width="30" height="30" />
-      Limen
-    </a>
+    <a class="brand" href="#">Limen</a>
     <nav class="nav-links">
       <a class="nav-gh" href="https://github.com/n-asuy/limen">GitHub</a>
       <a class="btn btn--primary" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
@@ -879,7 +893,7 @@ kbd {
 
 <footer class="footer">
   <div class="wrap footer-inner">
-    <span class="footer-brand"><img src="app_icon.png" alt="" width="22" height="22" /> Limen</span>
+    <span class="footer-brand">Limen</span>
     <span class="footer-meta">
       <a href="https://github.com/n-asuy/limen">GitHub</a>
       <span>MIT License</span>
