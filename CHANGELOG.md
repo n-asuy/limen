@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Enlarged the Settings window so every section stays fully visible, including the states that add a line (an update is available, only some Space switching shortcuts are enabled)
+
 ## 0.1.2
 
 - Added a setup section to the landing page covering the two macOS settings Limen depends on: the Accessibility permission and the "Switch to Desktop 1..9" Mission Control shortcuts
