@@ -16,6 +16,7 @@ mod macos;
 mod perf;
 mod persistence;
 mod tray;
+mod updater;
 
 static ACTIVE_SPACE_ID: OnceLock<Mutex<Option<u32>>> = OnceLock::new();
 static APP_CONFIG: OnceLock<Mutex<config::Config>> = OnceLock::new();
@@ -603,6 +604,7 @@ pub fn run() {
             None,
         ))
         .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             toggle_window,
             hide_window,
@@ -621,6 +623,8 @@ pub fn run() {
             reset_shortcut_config,
             suspend_shortcuts,
             resume_shortcuts,
+            updater::check_for_update,
+            updater::install_update,
         ])
         .setup(|app| {
             // Initialise perf writer (no-op when feature = "profiling" is off)

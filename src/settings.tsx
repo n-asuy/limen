@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 import ShortcutRecorder from "./components/shortcut-recorder";
 import { humanizeShortcutError } from "./lib/shortcut";
@@ -11,12 +12,26 @@ type ShortcutPreferences = {
   fallback: string[];
 };
 
+type AvailableUpdate = {
+  version: string;
+  current_version: string;
+  notes: string | null;
+};
+
+// idle: not checked yet. checking/installing: request in flight.
+// uptodate/available/error: terminal states of the last check.
+type UpdatePhase = "idle" | "checking" | "uptodate" | "available" | "installing" | "error";
+
 export default function Settings() {
   const [shortcut, setShortcut] = useState<string>("");
   const [shortcutError, setShortcutError] = useState<string | null>(null);
   const [accessibilityGranted, setAccessibilityGranted] = useState<boolean | null>(null);
   const [spaceShortcuts, setSpaceShortcuts] = useState<number[] | null>(null);
   const [autostartEnabled, setAutostartEnabled] = useState<boolean | null>(null);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+  const [updatePhase, setUpdatePhase] = useState<UpdatePhase>("idle");
+  const [update, setUpdate] = useState<AvailableUpdate | null>(null);
+  const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
     invoke<ShortcutPreferences>("get_shortcut_config")
@@ -25,6 +40,9 @@ export default function Settings() {
     isEnabled()
       .then(setAutostartEnabled)
       .catch(() => setAutostartEnabled(null));
+    getVersion()
+      .then(setAppVersion)
+      .catch(() => setAppVersion(null));
   }, []);
 
   const refreshAccessibility = useCallback(() => {
@@ -82,6 +100,35 @@ export default function Settings() {
 
   const openShortcutSettings = useCallback(() => {
     invoke("open_space_shortcut_settings").catch(() => undefined);
+  }, []);
+
+  const checkForUpdate = useCallback(() => {
+    setUpdateError(null);
+    setUpdatePhase("checking");
+    invoke<AvailableUpdate | null>("check_for_update")
+      .then((result) => {
+        if (result) {
+          setUpdate(result);
+          setUpdatePhase("available");
+        } else {
+          setUpdate(null);
+          setUpdatePhase("uptodate");
+        }
+      })
+      .catch((err) => {
+        setUpdateError(String(err));
+        setUpdatePhase("error");
+      });
+  }, []);
+
+  const installUpdate = useCallback(() => {
+    setUpdateError(null);
+    setUpdatePhase("installing");
+    // On success the app relaunches, so this promise never resolves.
+    invoke("install_update").catch((err) => {
+      setUpdateError(String(err));
+      setUpdatePhase("error");
+    });
   }, []);
 
   const toggleAutostart = useCallback(() => {
@@ -164,6 +211,49 @@ export default function Settings() {
           >
             <span className="settings__toggle-knob" />
           </button>
+        </div>
+      </section>
+
+      <section className="settings__section">
+        <h2 className="settings__heading">Software update</h2>
+        <div className="settings__row">
+          <div>
+            <div className="settings__row-title">
+              {update ? `Version ${update.version} available` : "Limen is up to date"}
+            </div>
+            <p className="settings__description">
+              {updatePhase === "checking"
+                ? "Checking for updates..."
+                : updatePhase === "installing"
+                  ? "Downloading and installing. Limen will restart."
+                  : updatePhase === "error"
+                    ? (updateError ?? "Could not check for updates.")
+                    : update
+                      ? `You have ${update.current_version}. Install to update and restart.`
+                      : appVersion
+                        ? `Current version ${appVersion}.`
+                        : "Check for a newer signed release."}
+            </p>
+          </div>
+          {update ? (
+            <button
+              type="button"
+              className="settings__primary"
+              onClick={installUpdate}
+              disabled={updatePhase === "installing"}
+            >
+              Install & restart
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="settings__action"
+              onClick={checkForUpdate}
+              disabled={updatePhase === "checking"}
+            >
+              Check for updates
+            </button>
+          )}
         </div>
       </section>
       </div>

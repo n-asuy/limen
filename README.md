@@ -69,7 +69,11 @@ Limen needs two macOS settings to work:
 1. **Accessibility permission** — required to inject the switching key events. Limen prompts on first launch; grant it under System Settings → Privacy & Security → Accessibility. If you dismissed the prompt, a failed switch reopens that pane for you.
 2. **Mission Control keyboard shortcuts** — Limen switches Spaces by triggering the built-in `Ctrl+1`–`9` shortcuts, which macOS keeps **disabled by default**. Enable "Switch to Desktop 1..9" under System Settings → Keyboard → Keyboard Shortcuts → Mission Control. Settings shows which of the nine are live and opens that pane for you; if none are, Limen opens Settings at launch, since switching cannot work at all.
 
-Limen never sends anything over the network; all data stays on your machine.
+Limen makes no network connections on its own; all data stays on your machine. The one exception is the updater: **only when you press "Check for updates" in Settings** does Limen contact GitHub Releases to look for and download a newer signed build. Nothing is sent in the background.
+
+## Software Updates
+
+Limen updates itself in place. Open **Settings → Software update** and press **Check for updates**; if a newer release is available, **Install & restart** downloads it, verifies its signature, and relaunches. Update artifacts are signed with a dedicated key and verified against the public key built into the app, so a tampered or unsigned build is rejected.
 
 ## Prerequisites (development)
 
