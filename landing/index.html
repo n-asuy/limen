@@ -26,6 +26,14 @@
   font-display: swap;
   src: url("fonts/space-grotesk-700.woff2") format("woff2");
 }
+/* Italic serif accent for the headline second line (SIL OFL) */
+@font-face {
+  font-family: "Playfair Display";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/playfair-italic-500.woff2") format("woff2");
+}
 
 /* ---------------------------------------------------------------------------
    Tokens: mirrors the app's own neumorphic palette (src/app.css)
@@ -207,21 +215,18 @@ kbd {
   transition: color 140ms ease;
 }
 .nav-links > a:not(.btn):hover { color: #fff; }
-/* Glass download pill floats over the sky */
-.nav .btn--primary {
-  padding: 10px 20px;
+/* Black download pill floats over the sky */
+.btn--dl-nav {
+  padding: 9px 18px;
   font-size: 14.5px;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 20, 55, 0.22);
 }
-.nav .btn--primary:hover { background: rgba(255, 255, 255, 0.26); filter: none; }
+.btn--dl-nav .icon { width: 15px; height: 15px; margin-top: -2px; }
 
 /* ---------------------------------------------------------------------------
-   Hero: asymmetric split, copy left, live ring demo right
+   Hero: product-first, centered. The ring is summoned at the center of the
+   screen in the real app, so the page opens the same way
 --------------------------------------------------------------------------- */
 .hero-section { position: relative; isolation: isolate; }
 /* Full-bleed soft "gradient hill" wallpaper, macOS-style. Swap in a real
@@ -247,59 +252,87 @@ kbd {
   pointer-events: none;
 }
 .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 40px;
-  padding: 112px 0 96px;
+  text-align: center;
+  gap: 6px;
+  padding: 82px 0 56px;
   min-height: 100dvh;
 }
+/* Ring is a touch smaller in the hero so the whole overlay plus its hint sit
+   in view without crowding the headline */
+.hero-demo .ring { --R: clamp(126px, 13.5vw, 152px); }
+.hero-copy { display: contents; }
+/* Eyebrow: small mac-app category label, mirrors the reference */
+.hero-copy .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 8px rgba(0, 40, 90, 0.28);
+}
+.hero-copy .eyebrow .icon { width: 15px; height: 15px; fill: #fff; }
 .hero-copy h1 {
-  font-size: clamp(2.6rem, 5vw, 4rem);
-  line-height: 1.04;
+  margin-top: 22px;
+  font-size: clamp(2.9rem, 6vw, 4.6rem);
+  line-height: 1;
   letter-spacing: -0.035em;
   color: #fff;
-  text-shadow: 0 2px 20px rgba(0, 40, 90, 0.28);
+  text-shadow: 0 2px 24px rgba(0, 40, 90, 0.3);
 }
+/* Italic serif accent line, per the reference's sans + serif pairing */
 .hero-copy h1 em {
-  font-style: normal;
-  color: #d9e6ff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #eaf1ff;
 }
 .hero-copy p {
-  margin-top: 22px;
-  max-width: 44ch;
-  font-size: 1.16rem;
+  margin-top: 24px;
+  max-width: 42ch;
+  font-size: 1.14rem;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 1px 12px rgba(0, 40, 90, 0.25);
 }
 .hero-copy p kbd { font-size: 0.82em; margin: 0 3px; color: var(--ink); text-shadow: none; }
 .hero-copy .keys { white-space: nowrap; }
 .hero-ctas {
-  margin-top: 34px;
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+}
+/* Black macOS download pill with Apple mark, like the reference */
+.btn--dl {
+  padding: 15px 28px;
+  border-radius: 999px;
+  font: 600 16px/1 var(--font);
+  color: #fff;
+  background: #14151a;
+  box-shadow: 0 8px 24px rgba(0, 20, 55, 0.28);
+  gap: 10px;
+}
+.btn--dl .icon { width: 17px; height: 17px; fill: #fff; margin-top: -2px; }
+.btn--dl:hover { background: #23252d; transform: translateY(-1px); }
+/* Muted meta row under the CTA */
+.hero-meta {
+  margin-top: 22px;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  justify-content: center;
+  gap: 10px 26px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 1px 8px rgba(0, 40, 90, 0.2);
 }
-/* On the sky, the primary reads as solid white; the secondary as glass */
-.hero-ctas .btn--primary {
-  background: #fff;
-  color: #14315e;
-  box-shadow: 0 6px 20px rgba(0, 30, 70, 0.22);
-}
-.hero-ctas .btn--primary:hover { filter: none; background: #fff; transform: translateY(-1px); }
-.hero-ctas .btn--soft {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-.hero-ctas .btn--soft:hover { background: rgba(255, 255, 255, 0.26); }
 .hero-demo {
+  margin-top: 24px;
   display: grid;
   justify-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 /* Frosted pill so the hint reads over both the blue sky and the white clouds */
 .demo-hint {
@@ -716,12 +749,10 @@ kbd {
 --------------------------------------------------------------------------- */
 @media (max-width: 960px) {
   .hero {
-    grid-template-columns: 1fr;
-    gap: 56px;
-    padding: 56px 0 72px;
-    min-height: 0;
+    padding: 104px 0 72px;
+    min-height: 100dvh;
   }
-  .hero-demo { order: 2; }
+  .hero-demo { margin-top: 38px; }
   .cell--named, .cell--icons, .cell--trail,
   .cell--shortcut, .cell--tray { grid-column: span 12; }
   .setup-grid { grid-template-columns: 1fr; }
@@ -745,6 +776,7 @@ kbd {
   <symbol id="i-terminal-window" viewBox="0 0 256 256"><path d="M128,128a8,8,0,0,1-3,6.25l-40,32a8,8,0,1,1-10-12.5L107.19,128,75,102.25a8,8,0,1,1,10-12.5l40,32A8,8,0,0,1,128,128Zm48,24H136a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Zm56-96V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></symbol>
   <symbol id="i-browser" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V88H40V56Zm0,144H40V104H216v96Z"/></symbol>
   <symbol id="i-music-notes" viewBox="0 0 256 256"><path d="M212.92,17.69a8,8,0,0,0-6.86-1.45l-128,32A8,8,0,0,0,72,56V166.08A36,36,0,1,0,88,196V110.25l112-28v51.83A36,36,0,1,0,216,164V24A8,8,0,0,0,212.92,17.69ZM52,216a20,20,0,1,1,20-20A20,20,0,0,1,52,216ZM88,93.75V62.25l112-28v31.5ZM180,184a20,20,0,1,1,20-20A20,20,0,0,1,180,184Z"/></symbol>
+  <symbol id="i-apple" viewBox="0 0 24 24"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47c-1.34.03-1.77-.79-3.29-.79c-1.53 0-2 .77-3.27.82c-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51c1.28-.02 2.5.87 3.29.87c.78 0 2.26-1.07 3.81-.91c.65.03 2.47.26 3.64 1.98c-.09.06-2.17 1.28-2.15 3.81c.03 3.02 2.65 4.03 2.68 4.04c-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5c.13 1.17-.34 2.35-1.04 3.19c-.69.85-1.83 1.51-2.95 1.42c-.15-1.15.41-2.35 1.05-3.11"/></symbol>
 </svg>
 
 <!-- App icon sprite: full-color brand logos (SVG Logos collection) -->
@@ -774,7 +806,9 @@ kbd {
     <a class="brand" href="#">Limen</a>
     <nav class="nav-links">
       <a class="nav-gh" href="https://github.com/n-asuy/limen">GitHub</a>
-      <a class="btn btn--primary" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
+      <a class="btn btn--dl btn--dl-nav" href="https://github.com/n-asuy/limen/releases/latest">
+        <svg class="icon" aria-hidden="true"><use href="#i-apple"/></svg> Download
+      </a>
     </nav>
   </div>
 </header>
@@ -785,12 +819,19 @@ kbd {
     <div class="hero-bg" aria-hidden="true"></div>
     <div class="wrap hero">
     <div class="hero-copy">
-      <h1>Every Space gets <em>a name.</em></h1>
+      <span class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-apple"/></svg> macOS Space switcher</span>
+      <h1>Every Space<br><em>gets a name.</em></h1>
       <p>Limen puts your macOS desktops in a ring. Press <span class="keys"><kbd>&#8997;</kbd><kbd>space</kbd></span>, tap a number, and land where you meant to.</p>
       <div class="hero-ctas">
-        <a class="btn btn--primary" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
-        <a class="btn btn--soft" href="https://github.com/n-asuy/limen">GitHub</a>
+        <a class="btn btn--dl" href="https://github.com/n-asuy/limen/releases/latest">
+          <svg class="icon" aria-hidden="true"><use href="#i-apple"/></svg> Download for macOS
+        </a>
       </div>
+      <p class="hero-meta">
+        <span>Free &amp; open source</span>
+        <span>Fully offline, no account</span>
+        <span>Apple silicon &amp; Intel</span>
+      </p>
     </div>
     <div class="hero-demo">
       <div class="ring" id="demo-ring" tabindex="0" role="application"
@@ -1025,17 +1066,8 @@ kbd {
   setActive(0);
   setCurrent(0);
 
-  /* Idle storytelling: walk the highlight around until the user takes over */
+  /* The ring stays still until the user acts: no idle auto-highlight */
   var demoVisible = false;
-  var idleTimer = null;
-  function startIdle() {
-    if (reduceMotion || idleTimer) return;
-    idleTimer = setInterval(function () {
-      if (!demoVisible || interacted) return;
-      setActive(activeIndex + 1);
-    }, 1600);
-  }
-  startIdle();
 
   /* Keyboard: digits work page-wide (no inputs on this page); arrows and
      Enter only while the ring is hovered or focused, to keep scrolling free */
