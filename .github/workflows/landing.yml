@@ -23,6 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # wrangler-action installs Wrangler with the repo's package manager (bun,
+      # detected from bun.lock), so bun must be on PATH first.
+      - uses: oven-sh/setup-bun@v2
+
       # Fail fast: never ship from CI without the deploy credential configured.
       - name: Verify credentials
         env:
