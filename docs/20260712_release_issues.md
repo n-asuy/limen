@@ -1,46 +1,25 @@
 # Limen v0.1 リリースイシュー管理
 
-最終更新: 2026-07-13 (第5版: R-13 アップデータをコード実装、残りは手動secret登録のみ)
+最終更新: 2026-07-13 (第6版: v0.1.1 リリース成功。R-01/R-04/R-08/R-13 を削除)
 対象: リリース(初回配布)に向けた課題の一覧と状態管理。
-ステータス: `open`(未着手) / `decision`(製品判断待ち) / `deferred`(リリース後対応)
+ステータス: `open`(未着手)
 
-注記: 対応済みの項目(R-02/R-03/R-05/R-07/R-09/R-10/R-11/R-12/R-14/R-16 と「修正済みの細目」)は本一覧から削除した。以下は未着手・判断待ち・リリース後対応のみ。
-- R-11 Space推定の制約: READMEの Space Detection 節に制約(シングルディスプレイ推奨・9 Spaceまで・空Spaceは曖昧)を明記。
-- R-12 トレイメニュー未更新: メニュー構築を build_tray_menu() に切り出し、リネーム(save_state_file)と space-changed(refresh_space_snapshot)で rebuild_menu() により再構築(src-tauri/src/tray.rs, lib.rs)。
+v0.1.1 を署名+公証+updater署名付きで公開済み: https://github.com/n-asuy/limen/releases/tag/v0.1.1
 
-## P0: リリースブロッカー
+注記: 対応済みの項目は本一覧から削除した。削除済み: R-02/R-03/R-05/R-07/R-09/R-10/R-11/R-12/R-14/R-16 と「修正済みの細目」に加え、以下:
+- R-01 配布経路: `n-asuy/limen`(public)から GitHub Releases で配布。同一リポジトリへの publish なので PAT 不要、ビルトイン `GITHUB_TOKEN` で完結。
+- R-04 リリースCI再実行: バージョン 0.1.1 統一の上、注釈付き v0.1.1 タグを push し CI が署名付き Release を publish 成功(8m48s)。
+- R-08 署名+公証: Curino LLC(Team BG439TZ56H)名義で6 secret 登録、CI の署名+公証を実証。鍵の控えは `~/limen-release-keys/`(リポジトリ外)。
+- R-13 アップデータ: tauri-plugin-updater 実装+Settings「Software update」+CI で updater アーティファクト署名。`latest.json` が version 0.1.1 を署名付きで返すことを確認。実機の更新往復検証は 0.1.2 リリース後に可能。
 
-### R-01 配布経路 `decision`(絞り込み済み)
-無料配布のため外部ホスティング(R2/S3等)は不要、GitHub Releasesで配る方針。ただしリポジトリがPRIVATEのままではRelease資産も非公開なので、どこかを公開する必要がある。
-- 推奨: リリース専用の公開リポジトリ(例: `limen`)を作り、tauri-actionの `owner`/`repo` 入力+fine-grained PATでそこへ公開する。ソースと履歴は非公開のまま。履歴の掃除が不要で最小コスト。
-- 代替: 本リポジトリをそのまま公開(履歴の露出を許容するなら最も簡単)。実シークレットの混入は無し(調査済み)。
-- 残作業: 公開先リポジトリの作成、workflowへの `owner`/`repo` とPAT追加、LPのDownloadリンク実装、LPデプロイのCI化。
-
-### R-04 リリースCIの再実行 `open`(タグpush待ち)
-v0.1.0 のリリースは tauri-action@v1 が当時未公開で失敗(現在はv1.0.0公開済みで修正不要)。
-- 実施済み: バージョンを 0.1.1 に統一(package.json / tauri.conf.json / Cargo.toml / Cargo.lock)。CHANGELOG に 0.1.1 エントリ追加。ビルド確認済み。
-- 残: 注釈付きタグを打って push (`git tag -a v0.1.1 -F <CHANGELOGエントリ> && git push origin v0.1.1`)。CI がタグとtauri.conf.jsonの一致・注釈の存在を検証する。
-- 前提: R-08 の残り2 secret(`APPLE_ID` / `APPLE_PASSWORD`)登録が未了だとビルド前 fail-fast で止まる。
-
-## P1: 初回体験を壊すもの
+## 残タスク(LP関連)
 
 ### R-06 Mission Controlショートカットの前提 `open`(LP記載)
 文書・アプリ内案内・初回導線・自動検出は実装済み。残: LPへのセットアップ記載。
 
-### R-08 署名+公証 `fixed`(secrets登録完了)
-名義は Curino LLC(Team `BG439TZ56H`)で確定。CI側(release.ymlの署名+公証env、secrets欠落時のfail-fastバリデーション)は実装済み。
-- `n-asuy/limen` に6 secret 登録完了(2026-07-13): `APPLE_CERTIFICATE`(Curino LLC Developer ID のリーフ+秘密鍵+中間証明書だけ抽出した .p12 の base64) / `APPLE_CERTIFICATE_PASSWORD` / `APPLE_SIGNING_IDENTITY`("Developer ID Application: Curino LLC (BG439TZ56H)") / `APPLE_TEAM_ID`(BG439TZ56H) / `APPLE_ID`(yuji.sato@curino.jp) / `APPLE_PASSWORD`(App用パスワード)。
-- 鍵の控えは `~/limen-release-keys/`(リポジトリ外)に保管。updater鍵と合わせて[README](file://~/limen-release-keys/README.md)参照。
-- 実際の署名+公証はR-04のタグpushでCIが実行して初めて検証される(未検証)。
-
-## P2: 品質・信頼性(リリース後の早期対応)
-
-### R-13 アップデータ `open`(手動作業のみ)
-tauri-plugin-updater を導入し、アプリ内更新を実装した。
-- 実装: プラグイン登録(lib.rs)、`plugins.updater`(endpoints + pubkey)と `bundle.createUpdaterArtifacts: true`(tauri.conf.json)、Rust コマンド `check_for_update`/`install_update`(src-tauri/src/updater.rs, ネットワークはここだけ・ユーザー操作時のみ)、Settings に「Software update」セクション(バージョン表示・Check for updates・Install & restart)、capability に `updater:default`。READMEに Software Updates 節を追記しプライバシー記述を「更新チェック時のみGitHubへ接続」に修正。
-- CI: release.yml のビルド step に `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` を追加し、fail-fast バリデーションにも秘密鍵を追加(欠落時はビルド前に失敗)。
-- 更新署名鍵は生成済み。公開鍵は tauri.conf.json に埋め込み、秘密鍵/空パスワードは `n-asuy/limen` の secrets(`TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`)に登録済み(2026-07-13)。endpoint は `https://github.com/n-asuy/limen/releases/latest/download/latest.json`(latest.json は tauri-action が Release 資産として生成)。
-- 依存: 署名導入(R-08)が前提。実機の更新往復検証はR-04で最初の署名付きReleaseを2つ以上作った後に可能。
-
-### R-15 LPの記載検証 `open`(縮小)
-ショートカット表記は ⌥+Space に更新済み。残: 「macOS 12+」の動作確認、Downloadリンク(R-01)、セットアップ手順の追記(R-06)。
+### R-15 LPの記載検証 `open`
+ショートカット表記は ⌥+Space に更新済み。残:
+- 「macOS 12+」の動作確認
+- Download リンクを v0.1.1 Release 資産(.dmg)に接続
+- セットアップ手順の追記(R-06)
+- LPデプロイのCI修復(現在 "Deploy landing page" ワークフローが失敗中)
