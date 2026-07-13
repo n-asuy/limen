@@ -262,7 +262,7 @@ kbd {
 }
 /* Ring is a touch smaller in the hero so the whole overlay plus its hint sit
    in view without crowding the headline */
-.hero-demo .ring { --R: clamp(126px, 13.5vw, 152px); }
+.hero-demo .ring { --R: clamp(150px, 16vw, 186px); }
 .hero-copy { display: contents; }
 /* Eyebrow: small mac-app category label, mirrors the reference */
 .hero-copy .eyebrow {
@@ -317,16 +317,26 @@ kbd {
 }
 .btn--dl .icon { width: 17px; height: 17px; fill: #fff; margin-top: -2px; }
 .btn--dl:hover { background: #23252d; transform: translateY(-1px); }
-/* Muted meta row under the CTA */
+/* Muted meta row under the CTA: kept short so it doesn't crowd the ring */
 .hero-meta {
-  margin-top: 22px;
+  margin-top: 16px;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 10px 26px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.72);
+  align-items: center;
+  gap: 20px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.68);
   text-shadow: 0 1px 8px rgba(0, 40, 90, 0.2);
+}
+.hero-meta span + span::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 20px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: middle;
 }
 .hero-demo {
   margin-top: 24px;
@@ -828,9 +838,8 @@ kbd {
         </a>
       </div>
       <p class="hero-meta">
-        <span>Free &amp; open source</span>
-        <span>Fully offline, no account</span>
-        <span>Apple silicon &amp; Intel</span>
+        <span>Open source</span>
+        <span>Fully offline</span>
       </p>
     </div>
     <div class="hero-demo">
