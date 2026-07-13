@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Limen - Name your macOS Spaces</title>
+<meta name="description" content="Limen puts your macOS desktops in a ring. Press Option+Space, tap a number, and land where you meant to." />
+<meta property="og:title" content="Limen - Name your macOS Spaces" />
+<meta property="og:description" content="A macOS Space switcher that gives every desktop a name and identity. Option+Space, then a number." />
+<meta property="og:image" content="app_icon.png" />
+<meta property="og:type" content="website" />
+<link rel="icon" type="image/png" href="app_icon.png" />
+<style>
+/* ---------------------------------------------------------------------------
+   Tokens: mirrors the app's own neumorphic palette (src/app.css)
+--------------------------------------------------------------------------- */
+:root {
+  --base: #f2f2f2;
+  --surface: #f2f2f2;
+  --ink: #33363b;
+  --muted: #63666c;
+  --accent: #6d5dfc;
+  --accent-ink: #ffffff;
+  --shadow-lo: rgba(0, 0, 0, 0.14);
+  --shadow-hi: rgba(255, 255, 255, 0.9);
+  --raised:
+    0.55rem 0.55rem 1.1rem var(--shadow-lo),
+    -0.35rem -0.35rem 0.9rem var(--shadow-hi);
+  --raised-sm:
+    0.3rem 0.3rem 0.65rem var(--shadow-lo),
+    -0.2rem -0.2rem 0.5rem var(--shadow-hi);
+  --inset:
+    inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.12),
+    inset -0.2rem -0.2rem 0.5rem var(--shadow-hi);
+  --hairline: rgba(0, 0, 0, 0.08);
+  --radius: 20px;
+  --font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    system-ui, Segoe UI, Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --base: #1d222e;
+    --surface: #1d222e;
+    --ink: #d6deeb;
+    --muted: #99a3b5;
+    --accent: #8fa0ff;
+    --accent-ink: #171b26;
+    --shadow-lo: rgba(0, 0, 0, 0.6);
+    --shadow-hi: rgba(255, 255, 255, 0.055);
+    --raised:
+      0.4rem 0.4rem 0.85rem var(--shadow-lo),
+      -0.25rem -0.25rem 0.6rem var(--shadow-hi);
+    --raised-sm:
+      0.25rem 0.25rem 0.55rem var(--shadow-lo),
+      -0.15rem -0.15rem 0.4rem var(--shadow-hi);
+    --inset:
+      inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.55),
+      inset -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.06);
+    --hairline: rgba(255, 255, 255, 0.09);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  font-family: var(--font);
+  background: var(--base);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+a { color: inherit; }
+
+h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.03em; }
+
+p { margin: 0; }
+
+::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+/* ---------------------------------------------------------------------------
+   Buttons and keys
+--------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: none;
+  font: 600 16px/1 var(--font);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+.btn:active { transform: translateY(1px) scale(0.985); }
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+.btn--primary:hover { filter: brightness(1.06); }
+
+.btn--soft {
+  background: var(--base);
+  color: var(--ink);
+  box-shadow: var(--raised-sm);
+}
+.btn--soft:hover { box-shadow: var(--raised); }
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2em;
+  padding: 0.32em 0.55em;
+  border-radius: 0.5em;
+  background: var(--base);
+  box-shadow: var(--raised-sm);
+  font: 600 1em/1.2 var(--mono);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Navigation
+--------------------------------------------------------------------------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--base) 82%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--hairline);
+}
+.nav-inner {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.brand img { width: 30px; height: 30px; border-radius: 8px; }
+.nav-links { display: flex; align-items: center; gap: 22px; }
+.nav-links > a:not(.btn) {
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 140ms ease;
+}
+.nav-links > a:not(.btn):hover { color: var(--ink); }
+.nav .btn { padding: 10px 20px; font-size: 14.5px; }
+
+/* ---------------------------------------------------------------------------
+   Hero: asymmetric split, copy left, live ring demo right
+--------------------------------------------------------------------------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  align-items: center;
+  gap: 40px;
+  padding: 72px 0 88px;
+  min-height: calc(100dvh - 68px);
+}
+.hero-copy h1 {
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+.hero-copy h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+.hero-copy p {
+  margin-top: 22px;
+  max-width: 44ch;
+  font-size: 1.16rem;
+  color: var(--muted);
+}
+.hero-copy p kbd { font-size: 0.82em; margin: 0 3px; }
+.hero-copy .keys { white-space: nowrap; }
+.hero-ctas {
+  margin-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.hero-demo {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+.demo-hint {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.demo-hint kbd { font-size: 12px; min-width: 1.9em; padding: 0.25em 0.45em; }
+
+/* ---------------------------------------------------------------------------
+   Ring demo: the app's actual overlay, rebuilt for the page
+--------------------------------------------------------------------------- */
+.ring {
+  --R: clamp(150px, 20vw, 208px);
+  --r: calc(var(--R) * 0.29);
+  --label-r: calc((var(--R) + var(--r)) / 2);
+  position: relative;
+  width: calc(var(--R) * 2);
+  height: calc(var(--R) * 2);
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+.ring:focus-visible::before {
+  box-shadow:
+    0.6rem 0.6rem 1.2rem var(--shadow-lo),
+    -0.2rem -0.2rem 1.4rem var(--shadow-hi),
+    0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    0.6rem 0.6rem 1.2rem var(--shadow-lo),
+    -0.2rem -0.2rem 1.4rem var(--shadow-hi);
+}
+.ring-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--base);
+  -webkit-mask: radial-gradient(circle at center,
+    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
+  mask: radial-gradient(circle at center,
+    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
+  box-shadow: var(--inset);
+  z-index: 1;
+}
+.ring-inner-bevel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow:
+    -4px -4px 10px var(--shadow-hi),
+    6px 6px 14px var(--shadow-lo);
+}
+.ring-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: calc(var(--r) * 1.9);
+  text-align: center;
+  pointer-events: none;
+}
+.ring-center .center-glyph { font-size: clamp(20px, 2.6vw, 26px); line-height: 1.2; }
+.ring-center .center-name {
+  font-size: clamp(11px, 1.3vw, 13px);
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+.ring-center kbd { font-size: 12px; }
+.ring-center.pulse { animation: centerPulse 320ms ease; }
+@keyframes centerPulse {
+  0% { transform: translate(-50%, -50%) scale(0.86); }
+  60% { transform: translate(-50%, -50%) scale(1.06); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.pie-list {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  z-index: 2;
+  overflow: clip; /* rotated sector boxes must not extend scrollable area */
+}
+.pie-item {
+  width: 50%;
+  height: 50%;
+  position: absolute;
+  bottom: 50%;
+  right: 50%;
+  transform-origin: bottom right;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pie-item--hit { pointer-events: auto; }
+.pie-hit {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.pie-slice {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 200%;
+  transform-origin: 50% 50%;
+  border-radius: 50%;
+  pointer-events: none;
+  -webkit-mask: radial-gradient(circle at center,
+    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
+  mask: radial-gradient(circle at center,
+    transparent 0 var(--r), #000 var(--r) var(--R), transparent var(--R) 100%);
+  background: radial-gradient(circle at 50% 50%,
+    transparent var(--r),
+    color-mix(in srgb, var(--ink) 22%, var(--base)) calc(var(--r) + 2px),
+    color-mix(in srgb, var(--ink) 22%, var(--base)) 76%,
+    transparent 100%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  .pie-slice {
+    background: radial-gradient(circle at 50% 50%,
+      transparent var(--r),
+      color-mix(in srgb, var(--ink) 28%, var(--base)) calc(var(--r) + 2px),
+      color-mix(in srgb, var(--ink) 28%, var(--base)) 76%,
+      transparent 100%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+}
+.pie-slice--current { opacity: 0.55; }
+
+.ring-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--ink);
+  cursor: pointer;
+  z-index: 3;
+  font-family: var(--font);
+}
+.ring-item .glyph { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; }
+.ring-item .name {
+  font-size: clamp(11px, 1.3vw, 13px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.ring-item.is-current .name { color: var(--muted); }
+
+/* ---------------------------------------------------------------------------
+   Keystroke flow
+--------------------------------------------------------------------------- */
+.flow {
+  padding: 110px 0;
+  text-align: center;
+}
+.flow h2 {
+  font-size: clamp(1.9rem, 3.4vw, 2.7rem);
+}
+.flow-sub {
+  margin: 16px auto 0;
+  max-width: 52ch;
+  color: var(--muted);
+  font-size: 1.06rem;
+}
+.flow-keys {
+  margin-top: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: clamp(1.3rem, 2.6vw, 2rem);
+}
+.flow-keys .plus, .flow-keys .then {
+  color: var(--muted);
+  font-size: 0.7em;
+  font-weight: 500;
+}
+.flow-keys kbd {
+  padding: 0.5em 0.75em;
+  border-radius: 0.55em;
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.flow-keys .landed {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.42em 0.85em;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--base));
+  box-shadow: var(--raised-sm);
+  font-size: 0.82em;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+.flow.played kbd.press { animation: keyPress 360ms ease; }
+.flow.played .k1.press { animation-delay: 0ms; }
+.flow.played .k2.press { animation-delay: 120ms; }
+.flow.played .k3.press { animation-delay: 700ms; }
+.flow.played .landed { opacity: 1; transform: none; transition-delay: 1150ms; }
+@keyframes keyPress {
+  0% { transform: none; }
+  35% { transform: translateY(3px) scale(0.94); box-shadow: var(--inset); }
+  100% { transform: none; }
+}
+.flow-caption {
+  margin-top: 30px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Feature bento
+--------------------------------------------------------------------------- */
+.features { padding: 40px 0 110px; }
+.features-head { max-width: 62ch; }
+.features-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.7rem); }
+.features-head p {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 1.06rem;
+  max-width: 56ch;
+}
+.bento {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 22px;
+}
+.cell {
+  border-radius: var(--radius);
+  background: var(--base);
+  box-shadow: var(--raised);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: flex-end;
+  min-height: 210px;
+}
+.cell h3 { font-size: 1.22rem; letter-spacing: -0.02em; }
+.cell p { color: var(--muted); font-size: 0.98rem; }
+.cell .art { flex: 1; display: flex; align-items: center; }
+.cell--named {
+  grid-column: span 7;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 14%, var(--base)),
+    color-mix(in srgb, var(--accent) 4%, var(--base)) 70%);
+}
+.cell--icons { grid-column: span 5; }
+.cell--trail { grid-column: span 4; }
+.cell--shortcut {
+  grid-column: span 8;
+  background: linear-gradient(120deg,
+    color-mix(in srgb, var(--ink) 5%, var(--base)),
+    var(--base) 65%);
+}
+.cell--tray { grid-column: span 5; }
+.cell--persist { grid-column: span 7; }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--base);
+  box-shadow: var(--raised-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.chip--faded { opacity: 0.65; }
+
+.icon-stack { position: relative; height: 56px; width: 120px; }
+.icon-tile {
+  position: absolute;
+  top: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+.icon-tile:nth-child(1) { left: 0; z-index: 3; background: linear-gradient(135deg, #5ac8fa, #2f6fed); }
+.icon-tile:nth-child(2) { left: 32px; z-index: 2; background: linear-gradient(135deg, #ffd60a, #ff9f0a); }
+.icon-tile:nth-child(3) { left: 64px; z-index: 1; background: linear-gradient(135deg, #32d74b, #0a8f4b); }
+
+.trail-art { display: flex; align-items: center; gap: 14px; }
+.trail-dot {
+  width: 13px; height: 13px; border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--base), var(--raised-sm);
+}
+.trail-dot--ring { background: var(--base); border: 2.5px solid var(--accent); }
+.trail-dot--empty { background: var(--base); box-shadow: var(--inset); }
+
+.shortcut-art { font-size: 1.5rem; display: flex; align-items: center; gap: 12px; }
+.shortcut-art .plus { color: var(--muted); font-size: 0.85em; }
+
+.tray-art {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  box-shadow: var(--raised-sm);
+  font: 600 0.95rem var(--mono);
+}
+.tray-art .tray-num {
+  display: inline-grid;
+  place-items: center;
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--ink) 85%, var(--base));
+  color: var(--base);
+  font-size: 0.8rem;
+}
+
+.persist-art { font: 500 0.9rem var(--mono); color: var(--muted); }
+
+/* ---------------------------------------------------------------------------
+   Setup requirements
+--------------------------------------------------------------------------- */
+.setup { padding: 0 0 110px; }
+.setup-head { max-width: 62ch; }
+.setup-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.7rem); }
+.setup-head p { margin-top: 16px; color: var(--muted); font-size: 1.06rem; max-width: 58ch; }
+.setup-grid {
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.setup-card {
+  border-radius: var(--radius);
+  padding: 30px;
+  box-shadow: var(--inset);
+}
+.setup-card h3 { font-size: 1.15rem; letter-spacing: -0.02em; }
+.setup-card p { margin-top: 10px; color: var(--muted); font-size: 0.98rem; }
+.setup-card .path {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 14px;
+  font: 500 0.85rem var(--mono);
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--base);
+  box-shadow: var(--raised-sm);
+  padding: 7px 12px;
+  border-radius: 9px;
+}
+.privacy {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 70ch;
+}
+.privacy code { font: 500 0.88em var(--mono); color: var(--ink); }
+
+/* ---------------------------------------------------------------------------
+   Closing CTA + footer
+--------------------------------------------------------------------------- */
+.closing {
+  padding: 60px 0 120px;
+  text-align: center;
+}
+.closing h2 { font-size: clamp(2.1rem, 4vw, 3.2rem); letter-spacing: -0.035em; }
+.closing p { margin: 18px auto 0; color: var(--muted); font-size: 1.08rem; max-width: 48ch; }
+.closing .btn { margin-top: 34px; font-size: 17px; padding: 15px 32px; }
+
+.footer { border-top: 1px solid var(--hairline); padding: 34px 0; }
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.footer-brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 15px; }
+.footer-brand img { width: 22px; height: 22px; border-radius: 6px; }
+.footer-meta { color: var(--muted); font-size: 14px; display: flex; gap: 20px; align-items: center; }
+.footer-meta a { color: var(--muted); text-decoration: none; }
+.footer-meta a:hover { color: var(--ink); }
+
+/* ---------------------------------------------------------------------------
+   Reveal on scroll (IntersectionObserver adds .in)
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 640ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 640ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.in { opacity: 1; transform: none; }
+  .reveal:nth-child(2) { transition-delay: 70ms; }
+  .reveal:nth-child(3) { transition-delay: 140ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .flow.played kbd.press { animation: none; }
+  .flow-keys .landed { opacity: 1; transform: none; transition: none; }
+  .ring-center.pulse { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Mobile collapse
+--------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 56px;
+    padding: 56px 0 72px;
+    min-height: 0;
+  }
+  .hero-demo { order: 2; }
+  .cell--named, .cell--icons, .cell--trail,
+  .cell--shortcut, .cell--tray, .cell--persist { grid-column: span 12; }
+  .setup-grid { grid-template-columns: 1fr; }
+  .nav-links > a.nav-gh { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#">
+      <img src="app_icon.png" alt="" width="30" height="30" />
+      Limen
+    </a>
+    <nav class="nav-links">
+      <a class="nav-gh" href="https://github.com/n-asuy/limen">GitHub</a>
+      <a class="btn btn--primary" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="wrap hero">
+    <div class="hero-copy">
+      <h1>Every Space gets <em>a name.</em></h1>
+      <p>Limen puts your macOS desktops in a ring. Press <span class="keys"><kbd>&#8997;</kbd><kbd>space</kbd></span>, tap a number, and land where you meant to.</p>
+      <div class="hero-ctas">
+        <a class="btn btn--primary" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
+        <a class="btn btn--soft" href="https://github.com/n-asuy/limen">GitHub</a>
+      </div>
+    </div>
+    <div class="hero-demo">
+      <div class="ring" id="demo-ring" tabindex="0" role="application"
+           aria-label="Limen ring demo. Use number keys 1 to 9 or arrow keys to switch Spaces.">
+        <div class="ring-bg" aria-hidden="true"></div>
+        <div class="ring-inner-bevel" aria-hidden="true"></div>
+        <ul class="pie-list" aria-hidden="true" id="pie-list"></ul>
+        <div class="ring-center" id="ring-center">
+          <span class="center-glyph"><kbd>&#8997;</kbd> <kbd>&#9251;</kbd></span>
+        </div>
+      </div>
+      <p class="demo-hint">This one is live. Press <kbd>1</kbd>-<kbd>9</kbd> or hover a slice.</p>
+    </div>
+  </section>
+
+  <!-- Keystroke flow -->
+  <section class="flow" id="flow">
+    <div class="wrap">
+      <h2 class="reveal">Three keystrokes to anywhere.</h2>
+      <p class="flow-sub reveal">No Mission Control zoom-out, no trackpad swiping past four desktops you didn't want.</p>
+      <div class="flow-keys reveal">
+        <kbd class="k1 press">&#8997;</kbd>
+        <span class="plus">+</span>
+        <kbd class="k2 press">space</kbd>
+        <span class="then">then</span>
+        <kbd class="k3 press">4</kbd>
+        <span class="landed"><span>&#127912;</span> Design</span>
+      </div>
+      <p class="flow-caption reveal">The ring appears, you pick a number, the overlay is gone before you blink.</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="wrap">
+      <div class="features-head reveal">
+        <h2>Identity for every desktop.</h2>
+        <p>macOS gives Spaces numbers. Limen gives them meaning, and shows you what lives where before you jump.</p>
+      </div>
+      <div class="bento">
+        <div class="cell cell--named reveal">
+          <div class="art chip-row">
+            <span class="chip">&#128187; Code</span>
+            <span class="chip">&#127912; Design</span>
+            <span class="chip chip--faded">&#128221; Notes</span>
+          </div>
+          <h3>Names, not numbers</h3>
+          <p>Give each Space a name and an emoji. Desktop 4 becomes Design, and you stop guessing.</p>
+        </div>
+        <div class="cell cell--icons reveal">
+          <div class="art">
+            <div class="icon-stack" aria-hidden="true">
+              <span class="icon-tile"></span><span class="icon-tile"></span><span class="icon-tile"></span>
+            </div>
+          </div>
+          <h3>See what's running where</h3>
+          <p>Each Space shows its top running apps as icons, so you know what's there before you switch.</p>
+        </div>
+        <div class="cell cell--trail reveal">
+          <div class="art trail-art" aria-hidden="true">
+            <span class="trail-dot"></span>
+            <span class="trail-dot trail-dot--ring"></span>
+            <span class="trail-dot trail-dot--empty"></span>
+          </div>
+          <h3>A trail of where you've been</h3>
+          <p>Your three most recent Spaces are marked on the ring. Backtracking takes one glance.</p>
+        </div>
+        <div class="cell cell--shortcut reveal">
+          <div class="art shortcut-art" aria-hidden="true">
+            <kbd>&#8997;</kbd><span class="plus">+</span><kbd>space</kbd>
+          </div>
+          <h3>Your shortcut, your call</h3>
+          <p>Option+Space out of the box. Rebind the global shortcut from Settings to whatever your hands prefer.</p>
+        </div>
+        <div class="cell cell--tray reveal">
+          <div class="art">
+            <span class="tray-art" aria-hidden="true"><span class="tray-num">3</span> Limen</span>
+          </div>
+          <h3>Lives in the menu bar</h3>
+          <p>The current Space number sits in your tray, and the menu switches Spaces when you'd rather use the mouse.</p>
+        </div>
+        <div class="cell cell--persist reveal">
+          <div class="art">
+            <span class="persist-art">~/Library/Application Support/Limen/space.json</span>
+          </div>
+          <h3>Set up once, keeps forever</h3>
+          <p>Names, emojis, and app history persist across restarts, saved locally as plain JSON.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup requirements -->
+  <section class="setup">
+    <div class="wrap">
+      <div class="setup-head reveal">
+        <h2>Two switches to flip.</h2>
+        <p>macOS has no public API for switching Spaces, so Limen drives the system the honest way: by pressing the keys macOS already understands. That needs two settings.</p>
+      </div>
+      <div class="setup-grid">
+        <div class="setup-card reveal">
+          <h3>Accessibility permission</h3>
+          <p>Limen synthesizes the switching key events, which macOS gates behind Accessibility. It prompts on first launch, and reopens the right pane if a switch ever fails.</p>
+          <span class="path">System Settings &rsaquo; Privacy &amp; Security &rsaquo; Accessibility</span>
+        </div>
+        <div class="setup-card reveal">
+          <h3>Desktop switching shortcuts</h3>
+          <p>macOS ships the Ctrl+1-9 desktop shortcuts disabled. Enable them once, and Limen's settings window shows you which of the nine are live.</p>
+          <span class="path">System Settings &rsaquo; Keyboard &rsaquo; Shortcuts &rsaquo; Mission Control</span>
+        </div>
+      </div>
+      <p class="privacy reveal">No accounts, no analytics, no network. Everything Limen knows lives in <code>~/Library/Application Support/Limen</code> and never leaves your machine.</p>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="closing">
+    <div class="wrap">
+      <h2 class="reveal">Stop counting desktops.</h2>
+      <p class="reveal">Free and open source under the MIT license. One small download, two settings, nine Spaces with names.</p>
+      <a class="btn btn--primary reveal" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span class="footer-brand"><img src="app_icon.png" alt="" width="22" height="22" /> Limen</span>
+    <span class="footer-meta">
+      <a href="https://github.com/n-asuy/limen">GitHub</a>
+      <span>MIT License &copy; Curino</span>
+    </span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ------------------------------------------------------------------
+     Ring demo: same geometry as the app (pie sectors via rotate+skew)
+  ------------------------------------------------------------------ */
+  var SPACES = [
+    { glyph: "\u{1F4BB}", name: "Code" },
+    { glyph: "\u{1F310}", name: "Web" },
+    { glyph: "✉️", name: "Mail" },
+    { glyph: "\u{1F3A8}", name: "Design" },
+    { glyph: "\u{1F4DD}", name: "Notes" },
+    { glyph: "\u{1F3A7}", name: "Music" },
+    { glyph: "\u{1F4AC}", name: "Chat" },
+    { glyph: "\u{1F4CA}", name: "Data" },
+    { glyph: "\u{1F9EA}", name: "Lab" }
+  ];
+  var N = SPACES.length;
+  var STEP = 360 / N;
+  var DELTA = 90 - STEP;
+  var START = DELTA + STEP / 2;
+
+  var ring = document.getElementById("demo-ring");
+  var pieList = document.getElementById("pie-list");
+  var center = document.getElementById("ring-center");
+  var centerDefault = center.innerHTML;
+
+  var activeIndex = 0;
+  var currentIndex = 0;
+  var interacted = false;
+
+  function sectorTransforms(index) {
+    return {
+      li: "rotate(" + (START + index * STEP) + "deg) skew(" + DELTA + "deg)",
+      inner: "skew(" + -DELTA + "deg) rotate(" + (STEP / 2 - 90) + "deg)"
+    };
+  }
+
+  var selectionLi = document.createElement("li");
+  selectionLi.className = "pie-item";
+  var selectionSlice = document.createElement("div");
+  selectionSlice.className = "pie-slice";
+  selectionLi.appendChild(selectionSlice);
+
+  var currentLi = document.createElement("li");
+  currentLi.className = "pie-item";
+  var currentSlice = document.createElement("div");
+  currentSlice.className = "pie-slice pie-slice--current";
+  currentLi.appendChild(currentSlice);
+
+  SPACES.forEach(function (space, i) {
+    var t = sectorTransforms(i);
+    var li = document.createElement("li");
+    li.className = "pie-item pie-item--hit";
+    li.style.transform = t.li;
+    var hit = document.createElement("div");
+    hit.className = "pie-hit";
+    hit.style.transform = t.inner;
+    hit.addEventListener("mouseenter", function () { interacted = true; setActive(i); });
+    hit.addEventListener("click", function () { select(i); });
+    li.appendChild(hit);
+    pieList.appendChild(li);
+  });
+  pieList.appendChild(currentLi);
+  pieList.appendChild(selectionLi);
+
+  var items = SPACES.map(function (space, i) {
+    var angle = i * STEP - 90;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ring-item";
+    btn.setAttribute("aria-label", "Switch to Space " + (i + 1) + ", " + space.name);
+    btn.style.transform =
+      "translate(-50%, -50%) rotate(" + angle + "deg) " +
+      "translate(var(--label-r)) rotate(" + -angle + "deg)";
+    btn.innerHTML =
+      '<span class="glyph" aria-hidden="true">' + space.glyph + "</span>" +
+      '<span class="name">' + space.name + "</span>";
+    btn.addEventListener("mouseenter", function () { interacted = true; setActive(i); });
+    btn.addEventListener("click", function () { select(i); });
+    ring.appendChild(btn);
+    return btn;
+  });
+
+  function setActive(i) {
+    activeIndex = ((i % N) + N) % N;
+    selectionLi.style.transform = sectorTransforms(activeIndex).li;
+    selectionSlice.style.transform = sectorTransforms(activeIndex).inner;
+  }
+
+  function setCurrent(i) {
+    currentIndex = i;
+    currentLi.style.transform = sectorTransforms(i).li;
+    currentSlice.style.transform = sectorTransforms(i).inner;
+    items.forEach(function (btn, j) {
+      btn.classList.toggle("is-current", j === i);
+    });
+  }
+
+  function select(i) {
+    interacted = true;
+    setActive(i);
+    setCurrent(i);
+    center.innerHTML =
+      '<span class="center-glyph">' + SPACES[i].glyph + "</span>" +
+      '<span class="center-name">' + SPACES[i].name + "</span>";
+    center.classList.remove("pulse");
+    void center.offsetWidth; /* restart animation */
+    center.classList.add("pulse");
+  }
+
+  setActive(0);
+  setCurrent(0);
+
+  /* Idle storytelling: walk the highlight around until the user takes over */
+  var demoVisible = false;
+  var idleTimer = null;
+  function startIdle() {
+    if (reduceMotion || idleTimer) return;
+    idleTimer = setInterval(function () {
+      if (!demoVisible || interacted) return;
+      setActive(activeIndex + 1);
+    }, 1600);
+  }
+  startIdle();
+
+  /* Keyboard: digits work page-wide (no inputs on this page); arrows and
+     Enter only while the ring is hovered or focused, to keep scrolling free */
+  var hovered = false;
+  ring.addEventListener("mouseenter", function () { hovered = true; });
+  ring.addEventListener("mouseleave", function () { hovered = false; });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^[1-9]$/.test(e.key) && demoVisible) {
+      var idx = parseInt(e.key, 10) - 1;
+      if (idx < N) select(idx);
+      return;
+    }
+    var engaged = hovered || ring === document.activeElement;
+    if (!engaged) return;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      interacted = true;
+      setActive(activeIndex + 1);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      interacted = true;
+      setActive(activeIndex - 1);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      select(activeIndex);
+    }
+  });
+
+  /* ------------------------------------------------------------------
+     Scroll reveals + one-shot keystroke animation (IntersectionObserver)
+  ------------------------------------------------------------------ */
+  var revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll(".reveal").forEach(function (el) {
+    revealObserver.observe(el);
+  });
+
+  var flow = document.getElementById("flow");
+  var flowObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        flow.classList.add("played");
+        flowObserver.unobserve(flow);
+      }
+    });
+  }, { threshold: 0.5 });
+  flowObserver.observe(flow);
+
+  var demoObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) { demoVisible = entry.isIntersecting; });
+  }, { threshold: 0.35 });
+  demoObserver.observe(ring);
+})();
+</script>
+</body>
+</html>
