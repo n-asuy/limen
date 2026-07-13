@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Added a setup section to the landing page covering the two macOS settings Limen depends on: the Accessibility permission and the "Switch to Desktop 1..9" Mission Control shortcuts
+- Declared macOS 12 as the minimum supported version, so the app no longer installs on releases it was never tested against
+- Corrected the landing page's privacy claim to match the updater: Limen reaches the network only when you check for updates
+
 ## 0.1.1
 
 - Added in-app updates: **Settings → Software update** checks GitHub Releases for a newer signed build and installs it in place, verifying the update signature before applying. Nothing is contacted over the network unless you press "Check for updates"

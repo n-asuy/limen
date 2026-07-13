@@ -702,6 +702,44 @@ kbd {
 .tray-art { flex: none; }
 
 /* ---------------------------------------------------------------------------
+   Setup
+--------------------------------------------------------------------------- */
+.setup { padding: 10px 0 110px; }
+.setup-grid {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+.setup-card {
+  border-radius: var(--radius);
+  background: var(--base);
+  box-shadow: var(--raised);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.setup-step {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--raised-sm);
+  margin-bottom: 6px;
+}
+.setup-card h3 { font-size: 1.22rem; letter-spacing: -0.02em; }
+.setup-card p { color: var(--muted); font-size: 0.98rem; }
+.setup-foot { margin-top: 30px; color: var(--muted); font-size: 0.95rem; }
+
+/* ---------------------------------------------------------------------------
    Closing CTA + footer
 --------------------------------------------------------------------------- */
 .closing {
@@ -924,11 +962,34 @@ kbd {
     </div>
   </section>
 
+  <!-- Setup -->
+  <section class="setup" id="setup">
+    <div class="wrap">
+      <div class="features-head reveal">
+        <h2>Two macOS settings, once.</h2>
+        <p>Limen drives the Spaces macOS already has. It needs permission to press the keys, and it needs the built-in Space shortcuts switched on. Settings walks you through both the first time you launch.</p>
+      </div>
+      <div class="setup-grid">
+        <div class="setup-card reveal">
+          <span class="setup-step">1</span>
+          <h3>Grant Accessibility</h3>
+          <p>Limen switches Spaces by sending the same keystrokes you would press yourself, which macOS gates behind Accessibility. Limen asks on first launch, and reopens the right pane if you dismiss it.</p>
+        </div>
+        <div class="setup-card reveal">
+          <span class="setup-step">2</span>
+          <h3>Enable &ldquo;Switch to Desktop 1&hellip;9&rdquo;</h3>
+          <p>macOS ships these Mission Control shortcuts turned off. Limen detects which of the nine are live, names the ones that are missing, and opens the Keyboard pane for you.</p>
+        </div>
+      </div>
+      <p class="setup-foot reveal">Requires macOS 12 or later. Signed and notarized, so it opens without a Gatekeeper warning.</p>
+    </div>
+  </section>
+
   <!-- Closing CTA -->
   <section class="closing">
     <div class="wrap">
       <h2 class="reveal">Stop counting desktops.</h2>
-      <p class="reveal">Free and open source under the MIT license. No accounts, no analytics, nothing ever leaves your machine.</p>
+      <p class="reveal">Free and open source under the MIT license. No accounts, no analytics. Limen reaches the network only when you ask it to check for updates.</p>
       <a class="btn btn--primary reveal" href="https://github.com/n-asuy/limen/releases/latest">Download for macOS</a>
     </div>
   </section>
