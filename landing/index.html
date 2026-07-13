@@ -299,22 +299,12 @@ kbd {
   text-align: center;
   pointer-events: none;
 }
-.ring-center .center-label {
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--muted);
+.ring-center .center-glyph {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-.ring-center .center-num {
-  font-size: clamp(30px, 4vw, 40px);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.ring-center kbd { font-size: 12px; }
+.ring-center kbd { font-size: 13px; }
 .ring-center.pulse { animation: centerPulse 320ms ease; }
 @keyframes centerPulse {
   0% { transform: translate(-50%, -50%) scale(0.86); }
@@ -723,8 +713,7 @@ kbd {
         <div class="ring-inner-bevel" aria-hidden="true"></div>
         <ul class="pie-list" aria-hidden="true" id="pie-list"></ul>
         <div class="ring-center" id="ring-center">
-          <span class="center-label">Desktop</span>
-          <span class="center-num">1</span>
+          <span class="center-glyph"><kbd>&#8997;</kbd><kbd>space</kbd></span>
         </div>
       </div>
       <p class="demo-hint">This one is live. Press <kbd>1</kbd>-<kbd>9</kbd> or hover a slice.</p>
@@ -940,9 +929,7 @@ kbd {
     interacted = true;
     setActive(i);
     setCurrent(i);
-    center.innerHTML =
-      '<span class="center-label">Desktop</span>' +
-      '<span class="center-num">' + (i + 1) + "</span>";
+    /* Center keeps the fixed shortcut hint; give it a small press cue */
     center.classList.remove("pulse");
     void center.offsetWidth; /* restart animation */
     center.classList.add("pulse");
